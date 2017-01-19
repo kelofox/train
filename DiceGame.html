@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<!-- 數字動畫 -->
+<script type="text/javascript" src="countUp.js"></script>
+<title>Dice House</title>
+<script>
+$(document).ready(function(){
+/*
+param:
+	speed = 遊戲速度;
+	stopFlag = 停止flag;
+	dround = 回合;
+	totalProfit = 總收益;
+	winRate = 勝率;
+	lossRate = 敗率;
+	winTimes = 勝場數;
+	lossTimes = 敗場數;
+	bs=連敗場數;
+	mbs=最高連敗場數;
+	statN = 數字動畫-開始數字;
+	endN = 數字動畫-結束數字;
+	mbet = 開始前設定的bet;
+
+function:
+	getCBS(當前balance,初始設定bet,初始設定addRate) //計算當前可承受連敗場數
+
+    FloatAdd(arg1, arg2) //浮點數相加
+    
+	FloatSubtraction //浮點數相減
+	
+	FloatMul(arg1, arg2) //浮點數相乘
+	
+	FloatDiv(arg1, arg2) //浮點數相除
+
+	EvalSound(audio tag id) //播放音效
+	
+    countUP(數字所在tag id,開始數字,結束數字) //數字動畫
+
+file:
+	jquery.min.js //JQuery
+	countUp.js //數字動畫
+	DinDon.wav //din don 音效:遊戲中斷用
+	ding.mp3   //ding 音效:最高連敗場數出現時用
+
+*/
+	speed = 1;
+	stopFlag = false;
+	dround = 0;
+	totalProfit = 0.0;
+	winRate = 0.0;
+	lossRate = 0.0;
+	winTimes = 0;
+	lossTimes = 0;
+	bs=0;
+	mbs=0;
+	statN = 0;
+	endN = 0;
+	
+	var showbalance = $("#showbalance");
+	//Play Dice Game
+	$("#playBtn").click(function(){
+		$(this).attr("disabled", true);
+		$(this).addClass("notAllow");
+		var balance = parseFloat($("#balance").val());
+		var bet = parseFloat($("#bet").val());
+		var mbet = bet;
+		var payout = parseFloat($("#payout").val());
+		var addRate = parseFloat($("#addRate").val());
+		addRate = 1+ (addRate/100);
+		//get Crash BS
+		getCBS(balance,mbet,addRate);
+		
+		showbalance.text(balance);
+		var showtotalProfit = $("#totalProfit");
+		var showwinRate = $("#winRate");
+		var showlossRate = $("#lossRate");
+		var showbs = $("#bs");
+		var showmbs = $("#mbs");
+		
+		var playTable = $("#playTable");
+		
+		stopFlag = false;
+		var appendResult = function(){
+			while(!stopFlag){
+				
+				//GAME
+				var gameNum = (100/payout) - 0.5;
+				var gameStr = gameNum.toFixed(2);
+				gameStr = "<" + gameStr;
+				//ROLL
+				var rollNum = Math.random()*100;
+				rollStr = rollNum.toFixed(2);
+				//Result & balance & bet & profit
+				var result,profit,setColor,betStr;
+				betStr = String(bet);
+				if(gameNum > rollNum){
+					//get Crash BS
+					getCBS(balance,mbet,addRate);
+					startN = balance;
+					result = "WIN";
+					profit = FloatMul(bet, payout);
+					profit = profit.toFixed(5);
+					balance = FloatAdd(balance, profit);
+					balance = balance.toFixed(5);
+					endN = balance;
+					bet = mbet;
+					totalProfit = FloatAdd(totalProfit, profit);
+					showtotalProfit.text(totalProfit);
+					//showbalance.text(balance);
+					countUP("showbalance",startN,endN);
+					setColor = true;
+					winTimes++;
+					
+				}else {
+					startN = balance;
+					result = "LOSS";
+					profit = FloatMul(bet, -1);
+					balance = FloatAdd(balance, profit);
+					endN = balance;
+					bet = FloatMul(bet, addRate);
+					bet = bet.toFixed(5);
+					totalProfit = FloatAdd(totalProfit, profit);
+					showtotalProfit.text(totalProfit);
+					//showbalance.text(balance);
+					countUP("showbalance",startN,endN);
+					setColor = false;
+					lossTimes++;
+				}
+				dround++;
+				//show W/L Rate
+				winRate = (winTimes/dround)*100;
+				winRate = winRate.toFixed(2);
+				lossRate = FloatSubtraction(100, winRate);
+				var winStr = winRate + " % / " + winTimes;
+				showwinRate.text(winStr);
+				var lossStr = lossRate + " % / " + lossTimes;
+				showlossRate.text(lossStr);
+				//BS
+				if(setColor){
+					//BS is killed
+					bs = 0;
+				}else {
+					//BS leve up
+					bs++;
+					if(bs > mbs){
+						mbs = bs;
+						EvalSound("ding");
+					}
+				}
+				var bsStr = (bs>0)? bs-1 : "0";
+				showbs.text(bsStr);
+				var mbsStr = (mbs>0)? mbs-1 : "0";
+				showmbs.text(mbsStr);
+				//draw result
+				var trStr = "<tr id='tr"+dround+"'>"
+							+"<td>"+ dround +"</td>"
+							+"<td>"+ betStr +"</td>"
+							+"<td>"+ payout +"</td>"
+							+"<td>"+ gameStr +"</td>"
+							+"<td>"+ rollStr +"</td>"
+							+"<td>"+ result +"</td>"
+							+"<td>"+ profit +"</td><tr>";
+				if(dround==1){
+					playTable.append(trStr);
+					if(setColor){
+						$("#tr"+dround).css("color","green");
+					}else{
+						$("#tr"+dround).css("color","red");
+					}
+					if(bet > balance){
+						$("#tr"+dround).hide().fadeIn(speed*1000);
+						$("#balance").val(balance);
+						EvalSound("DinDon");
+						alert("balance are less than bet");
+						$("#playBtn").attr("disabled", false);
+						$("#playBtn").removeClass("notAllow");
+					}else {
+						$("#tr"+dround).hide().fadeIn(speed*1000,appendResult);
+						//EvalSound("ding");
+					}
+				} else{
+					var preRound = dround-1;
+					$("#tr"+preRound).before(trStr);
+					if(setColor){
+						$("#tr"+dround).css("color","green");
+					}else{
+						$("#tr"+dround).css("color","red");
+					}
+					if(bet > balance){
+						$("#tr"+dround).hide().fadeIn(speed*1000);
+						$("#balance").val(balance);
+						EvalSound("DinDon");
+						alert("balance are less than bet");
+						$("#playBtn").attr("disabled", false);
+						$("#playBtn").removeClass("notAllow");
+					}else {
+						$("#tr"+dround).hide().fadeIn(speed*1000,appendResult);
+						//EvalSound("ding");
+					}
+				}
+				break;
+			}
+			
+			
+		}
+		appendResult();
+		
+	});
+	//Stop Game
+	$("#stopBtn").click(function(){
+		stopFlag = true;
+		$("#balance").val(endN);
+		$("#playBtn").attr("disabled", false);
+		$("#playBtn").removeClass("notAllow");
+	});
+	//Reset Game
+	$("#resetBtn").click(function(){
+		//remove tr whitch have td children
+		//$("#playTable td").parent().remove();
+		location.reload();
+		//reset dat
+		
+	});
+});
+
+//get Crash BS
+function getCBS(cbalance,cbet,caddRate){
+	var times = 0;
+	//alert("go!!!");
+	//alert(cbalance + ":" +cbet+ ":" +caddRate);
+	while(cbalance > cbet){
+		cbalance = cbalance - cbet;
+		times++;
+		cbet = FloatMul(cbet, caddRate);
+		//cbet = cbet*caddRate;
+	}
+	$("#CBS").text(times-1);
+}
+
+//浮點數相加
+function FloatAdd(arg1, arg2)
+{
+  var r1, r2, m;
+  try { r1 = arg1.toString().split(".")[1].length; } catch (e) { r1 = 0; }
+  try { r2 = arg2.toString().split(".")[1].length; } catch (e) { r2 = 0; }
+  m = Math.pow(10, Math.max(r1, r2));
+  return (FloatMul(arg1, m) + FloatMul(arg2, m)) / m;
+}
+//浮點數相減
+function FloatSubtraction(arg1, arg2)
+{
+  var r1, r2, m, n;
+  try { r1 = arg1.toString().split(".")[1].length } catch (e) { r1 = 0 }
+  try { r2 = arg2.toString().split(".")[1].length } catch (e) { r2 = 0 }
+  m = Math.pow(10, Math.max(r1, r2));
+  n = (r1 >= r2) ? r1 : r2;
+  return ((arg1 * m - arg2 * m) / m).toFixed(n);
+}
+//浮點數相乘
+function FloatMul(arg1, arg2)
+{
+  var m = 0, s1 = arg1.toString(), s2 = arg2.toString();
+  try { m += s1.split(".")[1].length; } catch (e) { }
+  try { m += s2.split(".")[1].length; } catch (e) { }
+  return Number(s1.replace(".", "")) * Number(s2.replace(".", "")) / Math.pow(10, m);
+}
+//浮點數相除
+function FloatDiv(arg1, arg2)
+{
+  var t1 = 0, t2 = 0, r1, r2;
+  try { t1 = arg1.toString().split(".")[1].length } catch (e) { }
+  try { t2 = arg2.toString().split(".")[1].length } catch (e) { }
+  with (Math)
+  {
+    r1 = Number(arg1.toString().replace(".", ""))
+    r2 = Number(arg2.toString().replace(".", ""))
+    return (r1 / r2) * pow(10, t2 - t1);
+  }
+}    
+
+
+//音效
+function EvalSound(soundID) {
+	var thissound = document.getElementById(soundID);
+	thissound.play();
+}
+
+//數字動畫
+function countUP(emelentId,startNumber,endNumber){
+	var options = {
+	  useEasing : true, 
+	  useGrouping : true, 
+	  separator : '', //千分位符號
+	  decimal : '.',  //小數點符號
+	  prefix : '', 
+	  suffix : '' 
+	};
+	//CountUp(數字所在tag id, 開始數字, 結束數字, 小數點位數, 速度, options)
+	var demo = new CountUp(emelentId, startNumber, endNumber, 5, 2.5, options);
+	demo.start();
+}
+
+</script>
+<style type="text/css">
+.goldDiv {
+    background: #FFF6DB;
+    border-width: 4px;
+    border-style: solid;
+    border-color: #CFC095;
+	padding:5px;
+}
+.pinkDiv {
+    background: #FFE7D9;
+    border-width: 4px;
+    border-style: solid;
+    border-color: #CEB9AD;
+	padding:5px;
+}
+.notAllow{
+	cursor:not-allowed;
+}
+</style>
+</head>
+<body>
+	<!-- Dice game -->
+	<div class="pinkDiv">
+		<div style="float:left;width:30%;margin-right:5%;margin-bottom:50px;" class="goldDiv">
+			<table>
+				<tr>
+					<td>
+						balance:
+					</td>  
+					<td>
+						<input type="text" id="balance" value="1000">
+					</td>  
+				</tr>
+				<tr>
+					<td>
+						bet:
+					</td>  
+					<td>
+						<input type="text" id="bet" value="0.00002">
+					</td>  
+				</tr>
+				<tr>
+					<td>
+						payout:
+					</td>  
+					<td>
+						<input type="text" id="payout" value="4">
+					</td>  
+				</tr>
+				<tr>
+					<td>
+						increase bet %<br>(when loss)
+					</td>  
+					<td>
+						<input type="text" id="addRate" value="50">
+					</td>  
+				</tr>
+			</table>
+			<br>
+			<button id="playBtn" style="margin-right:20px;">Play</button>
+			<button id="stopBtn" style="margin-right:20px;">STOP</button>
+			<button id="resetBtn" style="margin-right:20px;">RESET</button>
+			<br>　
+			<table border="1" style="width:50%">
+				<tr>
+					<td style="width:60%">NEW BS</td>
+					<td id="bs" style="width:40%">0</td>
+				</tr>
+				<tr>
+					<td>MAX BS</td>
+					<td id="mbs">0</td>
+				</tr>
+				<tr>
+					<td>Crash Round Remain</td>
+					<td id="CBS">0</td>
+				</tr>
+			</table>　
+		</div>
+		<div style="float:left;width:60%;margin-bottom:50px;" class="goldDiv">
+			<h2 style="text-align:center">Unit : mBTC</h2>
+			<p style="word-wrap: break-word;word-break: normal;font-weight:bold">
+				遊戲玩法:<br><br>
+				1.設定balance(籌碼，最小值:0.00001)<br><br>
+				2.設定下注額度(最小值:0.00001，請勿高於balance)<br><br>
+				3.設定payout(賠率，可設定至小數點下2位，但需大於1)<br><br>
+				4.設定當該局loss時，下局追加籌碼的比例(例:翻倍下注策略請設100)<br><br>
+				5.按下Play按鈕，啟動遊戲<br><br>
+			</p>
+		</div>
+		<style type="text/css">
+			table tr td {
+				text-align:center;
+			}
+		</style>
+	
+		<div style="clear:both;margin-top:50px;" class="goldDiv">
+			<table border="1" style="width:100%" id="playTable">
+				<tr>
+					<th>BALANCE</th>
+					<th colspan="3" id="showbalance">
+						0
+					</th>
+					<th>TOTAL PROFIT</th>
+					<th colspan="2" id="totalProfit">
+						0
+					</th>
+				</tr>
+				<tr>
+					<th>WIN</th>
+					<th colspan="3" id="winRate">
+						0
+					</th>
+					<th>LOSS</th>
+					<th colspan="2" id="lossRate">
+						0
+					</th>
+				</tr>
+				<tr>
+					<th style="width:6%">ROUND</th>
+					<th style="width:22%">BET</th>
+					<th style="width:8%">PAYOUT</th>
+					<th style="width:14%">GAME</th>
+					<th style="width:14%">ROLL</th>
+					<th style="width:14%">W/L</th>
+					<th style="width:20%">PROFIT</th>
+				</tr>
+			</table>
+		</div>
+	<!-- 音效 -->
+	<audio id="DinDon" src="DinDon.wav" controls preload="auto" autobuffer style="display:none">
+	</audio>
+	<audio id="ding" src="ding.mp3" controls preload="auto" autobuffer style="display:none">
+	</audio>
+<!--		<input type="button" value="Play Sound" onClick="EvalSound('DinDon')"> -->
+	</div>
+</body>
+</html>

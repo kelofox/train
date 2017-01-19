@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<title>Dice</title>
+</head>
+<script>
+$(document).ready(function(){
+    var unit = "BTC";
+	balance = 0;
+	mbalance = 0;
+	mbet = 0;
+	payout = 0;
+	addRate = 0;
+	
+    
+    $("input[type=radio][name=unit]").change(function(){
+        unit = $(this).val();
+        //alert(unit);
+    });
+
+    $("#calcu").click(function(){
+        mbet = $("#bet").val();
+		payout = $("#payout").val();
+		var times = -1;
+        var satoshi = 0.00000001;
+        var mBTC = 0.001;
+
+        if(unit == "mBTC"){
+            balance = $("#balance").val()*mBTC;
+			mbalance = balance;
+        }else if(unit == "satoshi"){
+            balance = $("#balance").val()*satoshi;
+			mbalance = balance;
+        }else {
+            balance = $("#balance").val();
+			mbalance = balance;
+        } 
+        var bet = $("#bet").val();
+        addRate = $("#addRate").val();
+
+        while(true){
+            balance = balance - bet;
+            if(balance <0){
+                break;
+            }else{
+                times++;
+            }
+            bet = bet*(1+addRate/100);
+        }
+        $("#outTimes").val(times);
+		if(times<0) {
+			alert("balance are less than bet");
+			return;
+		}
+		drawTable(times);
+    }); 
+	
+	//Dice Rate
+	$("#getResult").click(function(){
+		var tpayout = $("#tPayout").val();
+		diceRate(tpayout);
+	});
+    
+});
+
+function drawTable(level){
+	
+	$("#showTable").empty();
+	var thStr = "<tr id='levelC'><th style='background:black;color:white;'>Level</th></tr>"
+				+"<tr id='betC'><th style='background:#00e600;color:white;'>bet</th></tr>"
+				+"<tr id='costC'><th style='background:red;color:white;'>cost</th></tr>"
+				+"<tr id='earnC'><th style='background:#b3b300;color:white;'>earn</th></tr>"
+				+"<tr id='rbC'><th style='background:blue;color:white;'>remain balance</th></tr>";
+	$("#showTable").append(thStr);
+	
+	var levelC = $("#levelC");
+	var betC = $("#betC");
+	var costC = $("#costC");
+	var earnC = $("#earnC");
+	var rbC = $("#rbC");
+	
+	var costStr = 0;
+	for(var i =0;i<=level;i++){
+		levelC.append("<td align='center' style='background:black;color:white;'>"+i+"</td>");
+
+		var betStr = FloatMul(mbet*1000, Math.pow((1+addRate/100),i));
+		betC.append("<td style='background:#00e600;color:white;'>"+betStr+"</td>");
+
+		costStr = FloatAdd(costStr,betStr);
+		costC.append("<td style='background:red;color:white;'>"+costStr+"</td>");
+		
+		var earnStr = FloatMul(betStr, payout);
+		var earnStr = FloatSubtraction(earnStr, costStr);
+		earnC.append("<td style='background:#b3b300;color:white;'>"+earnStr+"</td>");
+
+		var balanceStr = FloatSubtraction(mbalance*1000, costStr);
+		rbC.append("<td style='background:blue;color:white;'>"+balanceStr+"</td>");
+	}
+}
+
+function diceRate(apayout){
+	var checkNum = 100/apayout;
+	var win = 0,loss = 0;
+	//黑天鵝累積次數
+	var BStimes = 0;
+	//黑天鵝最高等級
+	var BSMax = 0
+	var flag = false;
+	for(var i=1;i<=1000;i++){
+		var result = Math.random()*100;
+		result = result.toFixed(2);
+		if(result < checkNum){
+			win++;
+			BStimes = 0;
+			flag = false;
+		} else{
+			loss++;
+			//check BS
+			if(flag){
+				BStimes++;//連輸
+			}else{
+				flag = true;//上一回贏
+			}
+
+			if(BSMax < BStimes) {
+				BSMax = BStimes;
+			}
+		}
+	}
+	$("#winTimes").empty();
+	$("#winTimes").append(win + " times( "+ win/10 +"% )");
+	$("#lossTimes").empty();
+	$("#lossTimes").append(loss + " times( "+ loss/10 +"% )");
+	$("#MaxBS").empty();
+	$("#MaxBS").append(BSMax);
+}
+
+
+//浮點數相加
+function FloatAdd(arg1, arg2)
+{
+  var r1, r2, m;
+  try { r1 = arg1.toString().split(".")[1].length; } catch (e) { r1 = 0; }
+  try { r2 = arg2.toString().split(".")[1].length; } catch (e) { r2 = 0; }
+  m = Math.pow(10, Math.max(r1, r2));
+  return (FloatMul(arg1, m) + FloatMul(arg2, m)) / m;
+}
+//浮點數相減
+function FloatSubtraction(arg1, arg2)
+{
+  var r1, r2, m, n;
+  try { r1 = arg1.toString().split(".")[1].length } catch (e) { r1 = 0 }
+  try { r2 = arg2.toString().split(".")[1].length } catch (e) { r2 = 0 }
+  m = Math.pow(10, Math.max(r1, r2));
+  n = (r1 >= r2) ? r1 : r2;
+  return ((arg1 * m - arg2 * m) / m).toFixed(n);
+}
+//浮點數相乘
+function FloatMul(arg1, arg2)
+{
+  var m = 0, s1 = arg1.toString(), s2 = arg2.toString();
+  try { m += s1.split(".")[1].length; } catch (e) { }
+  try { m += s2.split(".")[1].length; } catch (e) { }
+  return Number(s1.replace(".", "")) * Number(s2.replace(".", "")) / Math.pow(10, m);
+}
+//浮點數相除
+function FloatDiv(arg1, arg2)
+{
+  var t1 = 0, t2 = 0, r1, r2;
+  try { t1 = arg1.toString().split(".")[1].length } catch (e) { }
+  try { t2 = arg2.toString().split(".")[1].length } catch (e) { }
+  with (Math)
+  {
+    r1 = Number(arg1.toString().replace(".", ""))
+    r2 = Number(arg2.toString().replace(".", ""))
+    return (r1 / r2) * pow(10, t2 - t1);
+  }
+}    
+
+
+//音效
+function EvalSound(soundID) {
+	var thissound = document.getElementById(soundID);
+	thissound.play();
+}
+
+</script>
+<style type="text/css">
+.goldDiv {
+    background: #FFF6DB;
+    border-width: 4px;
+    border-style: solid;
+    border-color: #CFC095;
+	padding:5px;
+}
+.pinkDiv {
+    background: #FFE7D9;
+    border-width: 4px;
+    border-style: solid;
+    border-color: #CEB9AD;
+	padding:5px;
+}	
+</style>
+    <body>
+		<div class="pinkDiv">
+			<div style="float:left;width:30%;margin-right:5%" class="goldDiv">
+				<h1>Strategy</h1>
+				<table>
+				<tr>
+				<td>
+					Unit:
+				</td>  
+				<td>
+					<input type="radio" name="unit" value="BTC" checked>BTC
+					<input type="radio" name="unit" value="mBTC">mBTC
+					<input type="radio" name="unit" value="satoshi">satoshi
+				</td>  
+				</tr>
+				<tr>
+					<td>
+						balance:
+					</td>  
+					<td>
+						<input type="text" id="balance">
+					</td>  
+				</tr>
+				<tr>
+					<td>
+						bet(BTC):
+					</td>  
+					<td>
+						<input type="text" id="bet">
+					</td>  
+				</tr>
+				<tr>
+					<td>
+						payout:
+					</td>  
+					<td>
+						<input type="text" id="payout">
+					</td>  
+				</tr>
+				<tr>
+					<td>
+						increase bet %<br>(when loss)
+					</td>  
+					<td>
+						<input type="text" id="addRate">
+					</td>  
+				</tr>
+				</table>
+				<br>
+				<button id="calcu">CAL</button><br>
+				<hr>
+				
+			</div>
+			
+			<div style="float:left;width:60%;margin-bottom:50px;" class="goldDiv">
+				<h2 style="text-align:center">Explanation</h2>
+				<p style="word-wrap: break-word;word-break: normal;font-weight:bold">
+					Strategy設定步驟:<br><br>
+					1.先選擇balance(籌碼)使用的單位(1 BTC = 1000 mBTC = 100000000 satoshi)<br><br>
+					2.設定balance(籌碼)<br><br>
+					3.設定下注額度(單位:BTC，請勿高於balance)<br><br>
+					4.設定payout(賠率，可設定至小數點下2位，但需大於1)<br><br>
+					5.設定當該局loss時，下局追加籌碼的比例(例:翻倍下注策略請設100)<br><br>
+					6.按下CAL按鈕，出現計算結果<br><br>
+				</p>
+			</div>
+			<hr>
+			<div style="clear:both;" class="goldDiv">
+				<h3>Black Swan Level:<br>(策略可承受黑天鵝/連輸次數)</h3><input type="text" id="outTimes"><br><br>
+				<h4 style="margin-bottom:0px;">Result(unit : mBTC)</h4>
+				<table border="1" id="showTable" style="">
+					<tr id='levelC'><th style='background:black;color:white;'>Level</th></tr>
+					<tr id='betC'><th style='background:#00e600;color:white;'>bet</th></tr>
+					<tr id='costC'><th style='background:red;color:white;'>cost</th></tr>
+					<tr id='earnC'><th style='background:#b3b300;color:white;'>earn</th></tr>
+					<tr id='rbC'><th style='background:blue;color:white;'>remain balance</th></tr>
+				</table>
+				<p style='background:black;color:white;width:20%'>Level：連輸累積次數</p>
+				<p style='background:#00e600;color:white;width:20%'>bet：該場下注金額</p>
+				<p style='background:red;color:white;width:20%'>cost：累積下注金額</p>
+				<p style='background:#b3b300;color:white;width:20%'>earn：該場勝利時獲利金額</p>
+				<p style='background:blue;color:white;width:20%'>remain balance：該場剩餘籌碼</p>
+			</div>
+		</div>
+		<hr>
+		<!-- 機率測試 -->
+		<div class="goldDiv">
+			<div>
+				<h1>Dice Rate(賠率可能連輸次數測試)</h1>
+				Payout:<input type="text" id="tPayout">
+				<button id="getResult">GO</button>
+				<hr>
+				Win:(勝場)<div id="winTimes"></div><br>
+				Loss:(負場)<div id="lossTimes"></div><br>
+				Max Black Swan Level:(最大連輸次數)<div id="MaxBS"></div>
+			</div>
+		</div>
+		<hr>
+		
+		<!-- 音效 -->
+		<audio id="audio1" src="DinDon.wav" controls preload="auto" autobuffer style="display:none">
+		</audio>
+<!--		<input type="button" value="Play Sound" onClick="EvalSound('audio1')"> -->
+    </body>
+</html>

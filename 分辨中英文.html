@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<title>分辨中英文</title>
+<script>
+$(document).ready(function(){
+
+});
+
+//中文：/^[\u4E00-\u9FA5]+$/
+
+//數字：/^d+$/（是非負整數哦）
+
+//字母：/^[a-zA-Z]{1,30}$/（1到30個以字母串）
+//regular expression way
+function reqTest(){
+	var testStr = $('#testStr').val();
+	//alert(testStr);
+	var chineseWordCount = 0;
+	var notCWCount = 0;
+	var reqStr = /[\u4e00-\u9fa5]/;
+	for(var i = 0; i < testStr.length; i++) {
+		if(!reqStr.test(testStr.charAt(i))) {
+			//alert("輸入非中文，請重新輸入"); 
+			//break;
+			notCWCount++;
+		}else{
+			chineseWordCount++;
+		}
+    }
+	var result = 'Result:<br\>';
+	result += '中文字數 : ' + chineseWordCount + '<br\>';
+	result += '非中文字數 : ' + notCWCount;
+	$('#showResult').html(result);
+	
+}
+
+// 目前在Unicode標準中，漢字的Char Code範圍是[0x4E00, 0x9FA5]
+// 數字辨別
+function wordTest(){
+	var testStr = $('#testStr').val();
+	//alert(testStr);
+	var chineseWordCount = 0;
+	var notCWCount = 0;
+	for(var i = 0; i < testStr.length; i++) {
+		console.log(testStr.charCodeAt(i).toString(16));
+		if(testStr.charCodeAt(i) < 0x4E00 || testStr.charCodeAt(i) > 0x9FA5) {
+			//alert("輸入非中文，請重新輸入"); 
+			//break;
+			notCWCount++;
+		}else{
+			chineseWordCount++;
+		}
+    }
+	var result = 'Result:<br\>';
+	result += '中文字數 : ' + chineseWordCount + '<br\>';
+	result += '非中文字數 : ' + notCWCount;
+	$('#showResult').html(result);
+}
+</script>
+<style type="text/css">
+
+</style>
+</head>
+<body>
+	<textarea id='testStr'></textarea><br/><input type='button' value='test' onclick='reqTest()'>
+	<h3 id='showResult'></h3>
+</body>
+</html>

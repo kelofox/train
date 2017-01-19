@@ -1,0 +1,339 @@
+<!doctype html>
+<html><!-- InstanceBegin template="/Templates/Layout.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=320, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Note</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+
+
+<!-- InstanceBeginEditable name="head" -->
+<script type="text/javascript">
+	
+	$(function(){
+		// 幫 #qaContent 的 ul 子元素加上 .accordionPart
+		// 接著再找出 li 中的第一個 div 子元素加上 .qa_title
+		// 並幫其加上 hover 及 click 事件
+		// 同時把兄弟元素加上 .qa_content 並隱藏起來
+		$('#qaContent ul').addClass('accordionPart').find('li div:nth-child(1)').addClass('qa_title').hover(function(){
+			$(this).addClass('qa_title_on');
+		}, function(){
+			$(this).removeClass('qa_title_on');
+		}).click(function(){
+			// 當點到標題時，若答案是隱藏時則顯示它，同時隱藏其它已經展開的項目
+			// 反之則隱藏
+			var $qa_content = $(this).next('div.qa_content');
+			if(!$qa_content.is(':visible')){
+				$('#qaContent ul li div.qa_content:visible').slideUp();
+			}
+			$qa_content.slideToggle();
+		}).siblings().addClass('qa_content').hide();
+		
+	//Add Note
+	
+		//book select
+		bookSize = $("li div:nth-of-type(1)").size();
+		bookSelect = $("#bookSelect");
+		deleteSelect = $("#deleteSelect");
+		//refresh select
+		refreshSelect();
+		$("#newbookSpan").show();
+		bookSelect.change(function(){
+			if($(this).val() != "addBook"){
+				$("#newbookSpan").hide();
+			}else{
+				$("#newbookSpan").show();
+			}
+		});
+		
+		
+		//add note and make download link
+		$("#downloadBtn").hide();
+		$("#addBtn").click(function(){
+			//add note
+			var selectValue = bookSelect.val();
+			var bookStr = $("#newbook").val();
+			var title = $("#title").val();
+			var bcontent = $("#content").val();
+			var qaContainer = $("#qaContent");
+			
+			var addStr = "";
+			var targetTable;
+			if(selectValue != "addBook"){
+				for(var j = 0;j<bookSize;j++){
+					if(selectValue == $("li div:nth-of-type(1)").eq(j).text()){
+						targetTable = $("li div:nth-of-type(1)").eq(j).next().find("table");
+					}
+				}
+				addStr = "<tr><td>"
+						+title
+						+"</td><td><pre>"
+						+bcontent
+						"</pre></td></tr>";
+				targetTable.append(addStr);
+				$("#newbook").val("");
+				$("#title").val("");
+				$("#content").val("");
+				alert("Add Note success");
+			}else {
+				addStr = "<ul><li><div>"
+						+bookStr
+						+"</div><div><table border='' style='width:100%'>"
+						+"<tr><td style='width:30%'>"
+						+title
+						+"</td><td style='width:70%'><pre>"
+						+bcontent
+						+"</pre></td></tr></table></div></li></ul>";
+				//add note and give it slide animate
+				qaContainer.append(addStr).find("ul:last").addClass('accordionPart').find('li div:nth-child(1)').addClass('qa_title').hover(function(){
+					$(this).addClass('qa_title_on');
+				}, function(){
+					$(this).removeClass('qa_title_on');
+				}).click(function(){
+					// 當點到標題時，若答案是隱藏時則顯示它，同時隱藏其它已經展開的項目
+					// 反之則隱藏
+					var $qa_content = $(this).next('div.qa_content');
+					if(!$qa_content.is(':visible')){
+						$('#qaContent ul li div.qa_content:visible').slideUp();
+					}
+					$qa_content.slideToggle();
+				}).siblings().addClass('qa_content').hide();
+				//refresh select
+				refreshSelect();
+				//清空新增設定欄位
+				$("#newbook").val("");
+				$("#title").val("");
+				$("#content").val("");
+				alert("Add Note success");
+			}
+			
+			
+			//make download link
+			makeDownloadButton();
+		});
+		//Open Mode
+		$("#openMode").click(function(){
+			if($(this).prop("checked")){
+				$("li div:nth-of-type(2)").slideDown();
+			}else {
+				$("li div:nth-of-type(2)").slideUp();
+			}
+		});
+		//Delete Note
+		$("#deleteBtn").click(function(){
+			var deleteSelectValue = $("#deleteSelect").val();
+			//alert()
+			var delUl;
+			for(var di = 0;di<bookSize;di++){
+				if(deleteSelectValue == $("li div:nth-of-type(1)").eq(di).text()){
+					delUl = $("li div:nth-of-type(1)").eq(di).parent().parent();
+					delUl.remove();
+				}
+			}
+			//refresh select
+			refreshSelect();
+			//make download link
+			makeDownloadButton();
+			alert(deleteSelectValue + " 已刪除");
+		});
+	});
+	
+//make download link button
+function makeDownloadButton(){
+	var $link = $("#aDownload");//a tag element
+	var htmlStr = "<!doctype html><html>" +$("html").html()+"</html>";//可依需求自訂內容
+	var blob = new Blob([htmlStr], 
+			  { type:"application/octect-stream" });
+	var blobUrl = URL.createObjectURL(blob);
+	var fileName = "note.html";
+	$link.attr({ href: blobUrl, download: fileName });
+	$("#downloadBtn").show();
+}
+
+//refresh select
+function refreshSelect(){
+	bookSize = $("li div:nth-of-type(1)").size();
+	bookSelect.empty();
+	deleteSelect.empty();
+	bookSelect.append("<option value='addBook'>新增主題</option>");
+	for(var ri = 0;ri<bookSize;ri++){
+			var bookNameR = $("li div:nth-of-type(1)").eq(ri).text();
+			var bookStrR = "<option value='"+bookNameR+"'>"+bookNameR;
+			bookSelect.append(bookStrR);
+			deleteSelect.append(bookStrR);
+	}
+}	
+</script>
+<!-- InstanceEndEditable -->
+<style type="text/css">
+td:nth-of-type(1){
+	text-align:center;
+	font-weight:bold;
+	color:blue;
+	font-family:"Comic Sans MS", cursive, sans-serif,"Microsoft JhengHei";
+}
+
+td:nth-of-type(2){
+	font-weight:bold;
+	color:blue;
+	font-family:Microsoft JhengHei;
+}
+
+div,button {
+	font-weight:bold;
+	color:blue;
+	font-family:"Comic Sans MS", cursive, sans-serif,"Microsoft JhengHei";
+	font-size:18px;
+}
+
+li div:nth-of-type(1):hover {
+	text-decoration:underline;
+	cursor:pointer;
+	color:pink;
+}
+
+input,option,textarea {
+	font-weight:bold;
+	font-family:"Comic Sans MS", cursive, sans-serif,"Microsoft JhengHei";
+	font-size:15px;
+}
+
+.goldDiv {
+    <!--background: #FFF6DB;-->
+    border-width: 4px;
+    border-style: solid;
+    border-color: #CFC095;
+	<!--padding:5px;-->
+}
+.pinkDiv {
+    background: #FFE7D9;
+    border-width: 4px;
+    border-style: solid;
+    border-color: #CEB9AD;
+	padding:5px;
+}
+
+</style>
+</head>
+<body>
+<header>
+</header>
+<!-- InstanceBeginEditable name="body" -->
+<div class="w1024">
+    <div class="Inbox">
+				<!-- Explanation div -->
+		<div id="" class="goldDiv">
+			<pre style="font-size:15px;">
+Add Note:
+1.新增/選擇主題
+2.填入主題名稱、內容標題、內容文字
+3.按ADD按鈕，新增成功後會出現DOWNLOAD按鈕
+4.按下DOWNLOAD按鈕生成新html
+Delete Note:
+1.選擇想刪除的主題
+2.按DELETE按鈕，刪除成功後會出現DOWNLOAD按鈕
+3.按下DOWNLOAD按鈕生成新html
+Open Mode:
+勾選時展開所有主題，取消勾選時收起
+			</pre>
+		</div>
+		<!-- note div -->
+        <div id="qaContent">
+			<ul>
+				<li>
+					<div>Notepad++</div>
+					<div>
+						<table border="" style="width:100%">
+							<tr>
+								<td style="width:30%">Ctrl-U</td>
+								<td style="width:70%">變為小寫</td>
+							</tr>
+							<tr>
+								<td>Ctrl-Shift-U</td>
+								<td>變為大寫</td>
+							</tr>
+							<tr>
+								<td>Ctrl-H</td>
+								<td>打開 Find / Replace 對話框</td>
+							</tr>
+							<tr>
+								<td>Ctrl-K</td>
+								<td>註解</td>
+							</tr>
+							<tr>
+								<td>Alt-C</td>
+								<td>批次插入數字/文字(先選擇多列)</td>
+							</tr>
+							<tr>
+								<td>Alt+S</td>
+								<td>文件對比</td>
+							</tr>
+						</table>
+					</div>
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<div>word小技巧</div>
+					<div>
+						<table border="" style="width:100%">
+							<tr>
+								<td style="width:30%">圖片向上長/圖片顯示剩最下方一條</td>
+								<td style="width:70%">行距由固定改成單行間距</td>
+							</tr>
+							<tr>
+								<td>Ctrl-Shift-Enter</td>
+								<td>表格分割</td>
+							</tr>
+							<tr>
+								<td>Ctrl-Enter</td>
+								<td>強迫換頁</td>
+							</tr>
+						</table>
+					</div>
+				</li>
+			</ul>
+        </div>
+		<div style="clear:both"></div>
+		<hr>
+		<!-- util div -->
+		<div>
+			<div style="float:left;width:10%"><h3>　</h3></div>
+			<div id="addDiv" style="float:left;width:40%">
+				<h3>Add Note</h3>
+				選擇主題:<br>
+				<select name="bookSelect" id="bookSelect">
+					<option value="addBook">新增主題</option>
+				</select>
+				<span id="newbookSpan"><br>設定主題:<br><input type="text" name="newbook" id="newbook" /></span><br><br>
+				設定標題:<br>
+				<input type="text" name="title" id="title" />
+				<br><br>
+				設定內容:<br>
+				<textarea rows="4" cols="50" id="content"></textarea>
+				<br><br>
+				<button id="addBtn">ADD</button>
+				<button id="downloadBtn"><a id='aDownload'>DOWNLOAD</a></button>
+				
+			</div>
+			<div id="deleteDiv" style="float:left;width:30%">
+				<!-- Delete Note -->
+				<h3>Delete Note</h3>
+				<select name="deleteSelect" id="deleteSelect">
+				</select>
+				<button id="deleteBtn">DELETE</button><br>
+				<!-- Open Mode -->
+				<h3><input type="checkbox" name="openMode" id="openMode" />　Open Mode</h3>
+			</div>
+		</div>
+		<!-- util div -->
+    </div>
+</div>
+<!-- InstanceEndEditable -->
+<footer>
+</footer>
+</body>
+
+
+<!-- InstanceEnd --></html>

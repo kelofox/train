@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+ 
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>HTML5 Blob URL應用-產生可下載檔案</title>
+    <style>
+      .revoke { text-decoration: line-through; }
+    </style>
+</head>
+<body>
+    <div>
+<textarea id='taText' style='width: 300px; height: 50px;'>
+是程式問題，但程式問題不等於程式設計師的問題。
+是網頁問題，但網頁問題不等於網頁攻城獅的問題。
+</textarea>
+      <br />
+      <input type="button" id='btnGenFile' value='產生檔案' />
+      <input type="button" id="btnRevokeUrl" value='註銷Blob URL' />
+      <br />
+      <a id='aDownload'></a>
+  </div>
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.9.1.js "></script>
+<script>
+        $(function () {
+          var $link = $("#aDownload");
+          $('#btnGenFile').click(function() {
+            var blob = new Blob([$("#taText").text()], 
+                      { type:"application/octect-stream" });
+            var blobUrl = URL.createObjectURL(blob);
+            var fileName = "words.txt";
+            $link.attr({ href: blobUrl, download: fileName })
+                 .text(fileName).removeClass("revoke");
+          });
+          $('#btnRevokeUrl').click(function() {
+            URL.revokeObjectURL($link.attr("href"));
+            $link.addClass("revoke");
+          });
+ 
+        });
+    </script>
+</body>
+</html>

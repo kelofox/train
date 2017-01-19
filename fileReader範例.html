@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<!--<meta http-equiv="refresh" content="0; url=http://www.nccc.com.tw/">-->
+	<title>Document</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+	<script src="papaparse.js"></script>
+<script type="text/javascript">
+checkStr = "";
+$(function() {
+	//button觸發方式
+	$('#BTN').click(function(){
+		
+		checkStr = checkType($('#file').val());
+		//alert(checkStr);
+		if(checkStr == "other"){
+			getAsImg($('#file')[0].files[0]);
+		}else{
+			getAsText($('#file')[0].files[0]);
+		}
+
+	});
+});
+
+//選檔後觸發方式
+function handleFiles(files) {
+  // Check for the various File API support.
+  if (window.FileReader) {
+      // FileReader are supported.
+      checkStr = checkType($('#file').val());
+	  //alert(checkStr);
+	  if(checkStr == "other"){
+		getAsImg(files[0]);
+	  }else{
+		getAsText(files[0]);
+	  }
+  } else {
+      alert('FileReader are not supported in this browser.');
+  }
+}
+
+function getAsText(fileToRead) {
+  var reader = new FileReader();
+  // Read file into memory as UTF-8      
+  reader.readAsText(fileToRead);
+  // Handle errors load
+  reader.onload = loadHandler;
+  reader.onerror = errorHandler;
+}
+
+function getAsImg(fileToRead) {
+  var reader = new FileReader();
+  // Read file into memory as UTF-8      
+  reader.readAsDataURL(fileToRead);
+  // Handle errors load
+  reader.onload = function(e){
+  	$('.preview').attr('src', e.target.result);
+    var KB = format_float(e.total / 1024, 2);
+    $('.size').text("檔案大小：" + KB + " KB");
+  }
+  reader.onerror = errorHandler;
+}
+
+function format_float(num, pos)
+{
+    var size = Math.pow(10, pos);
+    return Math.round(num * size) / size;
+}
+
+function loadHandler(event) {
+  var csv = event.target.result;
+  $('#fileContent').empty();
+  if(checkStr == "isCSV"){
+  	//csv檔
+  	var arr =processData(csv);
+    for(var i in arr){
+   		$('#fileContent').append(arr[i]+'<br>');
+    }
+  }else{
+  	//txt檔
+  	$('#fileContent').append(csv);
+  }
+  
+}
+
+function processData(csv) {
+    var allTextLines = csv.split(/\r\n|\n/);
+    var lines = [];
+    for (var i=0; i<allTextLines.length; i++) {
+        var data = allTextLines[i].split(';');
+            var tarr = [];
+            for (var j=0; j<data.length; j++) {
+                tarr.push(data[j]);
+            }
+            lines.push(tarr);
+    }
+  console.log(lines);
+  return lines;
+}
+
+function errorHandler(evt) {
+  if(evt.target.error.name == "NotReadableError") {
+      alert("Canno't read file !");
+  }
+}
+
+function checkType(fileName){
+	var checkResult = "other";
+	var csvRe = /\.(csv)$/i;
+	var txtRe = /\.(txt)$/i;
+	//var jpgRe = /\.(jpg)$/i;
+	if(csvRe.test(fileName)){
+		checkResult = "isCSV";
+	}else if(txtRe.test(fileName)){
+		checkResult = "isTXT";
+	}
+	return checkResult;
+}
+		
+</script>
+</head>
+<body style="font-weight: bold">
+	<input type="button" value="testBTN"/>
+	<input type="file" name="file" id="file" onchange="handleFiles(this.files)" >
+	<input type="button" name="BTN" id="BTN" value="BTN">
+	<div id="fileContent"></div>
+	<img class="preview" style="max-width: 500px; max-height: 500px;">
+    <div class="size"></div>
+</body>
+</html>

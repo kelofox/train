@@ -1,0 +1,17 @@
+The operating system running on this Container is Ubuntu 14.04 (64 bit). Ubuntu uses Advanced Packaging Tool (apt) package manager. You can read more here: apt-get
+
+To access an application running on your Container use the following link (ports 1024-9999 available):
+
+http://MyFirstPHP-kelofox849029.codeanyapp.com
+To access your application over HTTPS, make sure your application is running on port 3000 and use the following link:
+
+https://MyFirstPHP-kelofox849029.codeanyapp.com
+If the port is blocked by your firewall you can connect through the standard HTTP port: (replace XX with port you have specified in your app)
+
+http://port-XX.MyFirstPHP-kelofox849029.codeanyapp.com
+To access phpMyAdmin on your Container use the following link:
+
+http://MyFirstPHP-kelofox849029.codeanyapp.com/phpmyadmin
+
+首頁：
+http://myfirstphp-kelofox849029.codeanyapp.com/

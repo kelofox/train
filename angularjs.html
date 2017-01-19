@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+</head>
+<body>
+
+<div ng-app="myApp" ng-controller="myCtrl" 
+	ng-init="name1='CJ';quantity=1;cost=5;points=[1,15,19,2,40];names=['Jani','Hege','Kai']">
+ 	<p>名字 : <input type="text" ng-model="name"></p>
+ 	<h1>Hello {{name}}</h1>
+	
+	<p>姓名为 <span ng-bind="name1"></span></p> <!-- ng-bind 功能與{{}}相同-->
+	
+	<p>我的第一个表达式： {{ 5 + 5 }}</p>
+	
+	<p>总价： {{ quantity * cost }}</p>
+	
+	<p>第三个值为 {{ points[2] }}</p>
+	
+	名: <input type="text" ng-model="firstName"><br>
+	姓: <input type="text" ng-model="lastName"><br>
+	<br>
+	姓名: {{firstName + " " + lastName}}
+	
+	<p>使用 ng-repeat 来循环数组</p>
+	  <ul>
+		<li ng-repeat="x in names">
+		  {{ x }}
+		</li>
+	  </ul>
+	  <!-- 自定義指令,多種叫用方式-->
+	  <!-- restrict 值可以是以下几种:
+			E 只限元素名使用
+			A 只限属性使用
+			C 只限类名使用
+			M 只限注释使用
+			restrict 默认值为 EA, 即可以通过元素名和属性名来调用指令。
+	  -->
+	  <runoob-directive></runoob-directive>
+	  <div runoob-directive></div>
+	  <div class="runoob-directive"></div>
+	  <!-- 指令: runoob-directive -->
+	  
+</div>
+<script>
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope) {
+    $scope.firstName= "Kane";
+    $scope.lastName= "Yang";
+});
+app.directive("runoobDirective", function() {
+    return {
+        //restrict : "A",
+		template : "<h1>自定义指令!</h1>"
+    };
+});
+</script>
+
+</body>
+</html>

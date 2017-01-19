@@ -1,0 +1,78 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>haorooms博客，仿百度文库数字滚动效果</title>
+<meta name="keywords" content="jquery,haorooms博客,仿百度,数字滚动">
+<meta name="description" content="haorooms博客-jquery,haorooms博客,仿百度,数字滚动demo演示">
+<link rel="stylesheet" type="text/css" href="css/main.css" />
+<style type="text/css">
+#total{width:500px; height:40px; line-height:40px; margin:80px auto 20px auto; font-size:20px}
+#total .t_num{ display:inline-block; line-height:13px; margin:2px 4px 0 4px;}
+#total .t_num i{width:18px;height:23px; display:inline-block; background: url(css/number.png) no-repeat; background-position:0 0; text-indent:-999em}
+</style>
+<script src="http://libs.baidu.com/jquery/1.7.2/jquery.js"></script>
+<script type="text/javascript" src="js/animateBackground-plugin.js"></script>
+<script type="text/javascript">
+$(function(){
+	num = 1;
+	var showNum = function(){
+		for(;num<= 100;num++){
+			var numStr = String(num);
+			var len = numStr.length;
+			var add0N = 5-len;
+			if(add0N > 0) {
+				for(var i = 1;i<=add0N;i++){
+					num = "0" + num;
+				}
+			}
+			show_num(num);
+			num++;
+			setTimeout(showNum,500);
+			break;
+		}
+	};
+	showNum();
+	//show_num(12566);
+});
+
+function show_num(n){
+	var it = $(".t_num i");
+	var len = String(n).length;
+	for(var i=0;i<len;i++){
+		if(it.length<=i){
+			$(".t_num").append("<i></i>");
+		}
+		var num=String(n).charAt(i);
+		var y = -parseInt(num)*30;
+		var obj = $(".t_num i").eq(i);
+		obj.animate({
+			backgroundPosition :'(0 '+String(y)+'px)' 
+			}, 'slow','swing',function(){}
+		);
+	}
+	//$("#cur_num").val(n);
+}
+</script>
+</head>
+
+<body>
+
+  <div style="width:960px;height:90px;margin:0 auto;">
+  <script type="text/javascript">
+    /*960*90 创建于 2014-08-26*/
+    var cpro_id = "u1679029";
+</script>
+<script src="http://cpro.baidustatic.com/cpro/ui/c.js" type="text/javascript"></script>
+</div>
+<br/><br/><br/>
+<div id="main">
+   <div class="demo">  
+   <div id="total">
+   		下载量：<span class="t_num"></span>次
+   </div>
+	<input type="hidden" id="cur_num" value="">
+   </div>
+</div>
+</body>
+</html>

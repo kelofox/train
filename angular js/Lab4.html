@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html ng-app="sampleApp">
+ 
+<head>
+  <meta charset="utf-8">
+  <title>Lab 4 - 物件陣列繫結清單顯示</title>
+    <style>
+        table { width: 400px }
+        td,th { border: 1px solid gray; text-align: center }
+        a.btn { text-decoration: underline; cursor: pointer; color: blue; }
+    </style>  
+</head>
+<body ng-controller="defaultCtrl">
+  <input type="button" value="新增User" ng-click="model.addUser()" />
+  共 <span>{{ model.users.length }}</span> 筆， 
+  合計 <span>{{ model.calcTotalScore() | number:0 }}</span> 分
+  <table>
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>姓名</th>
+        <th>積分</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="user in model.users">
+        <td><span>{{ user.id }}</span>
+        </td>
+        <td><span>{{ user.name }}</span>
+        </td>
+        <td><span style='text-align: right'>{{ user.score }}</span>
+        </td>
+        <td><a ng-click="model.removeUser(user)" class="btn">移除</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.9.1.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.js"></script>
+  <script>
+    angular.module("sampleApp", [])
+    .controller("defaultCtrl", function($scope) {
+ 
+      //很簡單的User資料物件
+      function UserViewModel(id, name, score) {
+        var self = this;
+        self.id = id;
+        self.name = name;
+        self.score = score;
+      }
+ 
+      function myViewModel() {
+        var self = this;
+        self.users = [];
+        self.removeUser = function(user) {
+          self.users.splice(self.users.indexOf(user), 1);
+        };
+        var c = 3;
+        self.addUser = function() {
+          var now = new Date(); //用時間產生隨機屬性值
+          self.users.push(new UserViewModel(
+              "M" + c++,
+              "P" + "-" + now.getSeconds() * now.getMilliseconds(),
+              now.getMilliseconds()));        
+        };
+        self.calcTotalScore = function() {
+          var sum = 0;
+          $.each(self.users, function(i, user) {
+            sum += user.score;
+          });
+          return sum;
+        };
+      }
+      vm = new myViewModel();
+      vm.users.push(
+        new UserViewModel("M1", "Jeffrey", 32767));
+      vm.users.push(
+        new UserViewModel("M2", "Darkthread", 65535));
+      $scope.model = vm;
+      
+    });
+  </script>
+</body>
+ 
+</html>

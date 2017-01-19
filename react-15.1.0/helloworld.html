@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Show Time</title>
+    <script src="build/react.js"></script>
+    <script src="build/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+  </head>
+  <style>
+		p{font:italic bold 50px verdana;}
+  </style>
+  <body>
+    <div id="example"></div>
+    <script type="text/babel">
+	  var t0 = new Date().getTime(); 
+	  setInterval(function(){
+		var t1 = new Date().getTime();
+		var showTime = t1-t0; 
+	    var timeP = React.createElement("p",null,showTime);
+		ReactDOM.render(timeP,document.getElementById('example'));
+	  },16);
+
+    </script>
+  </body>
+</html>

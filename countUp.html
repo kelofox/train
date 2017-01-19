@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+	<script type="text/javascript" src="countUp.js"></script>
+	<title>countUp.js</title>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			
+			var options = {
+			  useEasing : true, 
+			  useGrouping : true, 
+			  separator : '', 
+			  decimal : '.', 
+			  prefix : '', 
+			  suffix : '' 
+			};
+			var demo = new CountUp("myTargetElement", 0, 3014, 0, 2.5, options);
+			demo.start();
+		});
+	</script>
+</head>
+<body>
+	<div id="myTargetElement">0</div>
+</body>
+</html>

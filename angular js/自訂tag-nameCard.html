@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>angular js</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.7/angular.js"></script>
+
+	<script type="text/javascript">
+		angular.module("ezstuff",[])
+		.directive("ezNamecard",function(){
+			return {
+				restrict : "E",
+				template : "<div class='namecard'>",
+				replace : true,
+				link : function(scope,element,attrs){
+					var sb = scope.$eval(attrs.data);
+					element.append("<div>name : " + sb.name + "</div>")
+						.append("<div>gender : " + sb.gender + "</div>")
+						.append("<div>age : " + sb.age + "</div>")
+				}
+			};
+		});
+	</script>
+	<style type="text/css">
+		.namecard{
+			border : 1px solid #000;
+			border-radius : 10px;
+			padding:10px;
+			width:300px;
+			background:#f0f0f0;
+		}
+	</style>
+</head>
+</head>
+<!-- ng-app指令在body这个DOM对象上建立了$rootScope对象 -->
+<body ng-app="ezstuff" ng-init="sb = {name:'somebody',gender:'male',age:28}">
+	<!-- 注意我们传入的变量名没加命名空间-->
+	<ez-namecard data="sb"></ez-namecard>
+</body>
+</html>
+

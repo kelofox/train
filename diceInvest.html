@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20150503/json2.js"></script>
+<title>Json Test</title>
+</head>
+<script>
+
+
+	
+$(document).ready(function(){
+
+	var request = new XMLHttpRequest();
+	var url = "https://www.crypto-games.net/details.aspx?type=investment&id=fb9J5cyZ6xaD2SmITFyO";
+	request.open("GET", url, false);
+	request.send(null);
+	if(request.readyState == 4 && request.status == 200){
+	  //生成表格
+	  var content = request.responseText;
+	  content = content.substring(content.indexOf("<table"),content.indexOf("</table>")+8);
+	  var div = document.getElementById("container");
+	  div.innerHTML = content;
+	  //抓數字
+	  var arr = content.split("</td><td>");
+	  var arrs = new Array();
+	  for (var i in arr){
+		if(!isNaN(arr[i])){
+			arrs.push(arr[i]);
+		}
+	  }
+	  //算profit
+	  var profit = 0;
+	  for(var j in arrs){
+		profit += parseFloat(arrs[j]);
+	  }
+	  var pDiv = document.getElementById("profit");
+	  pDiv.innerHTML = profit;
+
+	}
+	
+});
+
+</script>
+    <body>
+		<div id="container"></div>
+		<hr>
+		<div id="profit"></div>
+    </body>
+</html>

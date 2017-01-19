@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<title>倒數計時</title>
+<script>
+$(document).ready(function(){
+   countTime();
+});
+var timeOutSec = 120;	// timeout 時間
+var remindSec = 300;		// 提醒user時間
+var countDown = timeOutSec;
+function countTime(){
+	if (countDown != 1) {
+		countDown--;
+		document.getElementById('showTimeDiv').innerHTML = showTime(countDown);
+		if (countDown == remindSec) {
+				alert('剩下 '+ countDown +' 秒');
+		}
+	} else {
+			document.getElementById('showTimeDiv').innerHTML = '時間到';
+	}
+		setTimeout("countTime()", 1000);
+}
+
+function showTime(iTotal) {
+	var iSec = iTotal % 60;
+	var iMin = (iTotal - iSec) / 60;
+	return iMin + ' 分' + iSec + ' 秒';
+}
+</script>
+<style type="text/css">
+
+</style>
+</head>
+<body>
+	<div id='showTimeDiv'></div>
+</body>
+</html>

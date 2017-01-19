@@ -1,0 +1,1154 @@
+<!doctype html>
+<html><!-- InstanceBegin template="/Templates/Layout.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=320, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Note</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+
+
+<!-- InstanceBeginEditable name="head" -->
+<script type="text/javascript">
+	
+	$(function(){
+		// 幫 #qaContent 的 ul 子元素加上 .accordionPart
+		// 接著再找出 li 中的第一個 div 子元素加上 .qa_title
+		// 並幫其加上 hover 及 click 事件
+		// 同時把兄弟元素加上 .qa_content 並隱藏起來
+		$('#qaContent ul').addClass('accordionPart').find('li div:nth-child(1)').addClass('qa_title').hover(function(){
+			$(this).addClass('qa_title_on');
+		}, function(){
+			$(this).removeClass('qa_title_on');
+		}).click(function(){
+			// 當點到標題時，若答案是隱藏時則顯示它，同時隱藏其它已經展開的項目
+			// 反之則隱藏
+			var $qa_content = $(this).next('div.qa_content');
+			if(!$qa_content.is(':visible')){
+				$('#qaContent ul li div.qa_content:visible').slideUp();
+			}
+			$qa_content.slideToggle();
+		}).siblings().addClass('qa_content').hide();
+		
+	//Add Note
+	
+		//book select
+		bookSize = $("li div:nth-of-type(1)").size();
+		bookSelect = $("#bookSelect");
+		deleteSelect = $("#deleteSelect");
+		deleteNoteSelect = $("#deleteNoteSelect");
+		deleteTitleSelect = $("#deleteTitleSelect");
+		//refresh select
+		refreshSelect();
+		$("#newbookSpan").show();
+		bookSelect.change(function(){
+			if($(this).val() != "addBook"){
+				$("#newbookSpan").hide();
+			}else{
+				$("#newbookSpan").show();
+			}
+		});
+		
+		
+		//add note and make download link
+		$("#downloadBtn").hide();
+		$("#addBtn").click(function(){
+			//add note
+			var selectValue = bookSelect.val();
+			var bookStr = $("#newbook").val();
+			var title = $("#title").val();
+			var bcontent = $("#content").val();
+			var qaContainer = $("#qaContent");
+			var modifyBook = "";
+			var addStr = "";
+			var targetTable;
+			if(selectValue != "addBook"){
+				modifyBook = selectValue;
+				for(var j = 0;j<bookSize;j++){
+					if(selectValue == $("li div:nth-of-type(1)").eq(j).text()){
+						targetTable = $("li div:nth-of-type(1)").eq(j).next().find("table");
+					}
+				}
+				addStr = "<tr><td>"
+						+title
+						+"</td><td><pre>"
+						+bcontent
+						"</pre></td></tr>";
+				targetTable.append(addStr);
+				$("#newbook").val("");
+				$("#title").val("");
+				$("#content").val("");
+				alert("Add Note success");
+			}else {
+				modifyBook = bookStr;
+				addStr = "<ul><li><div>"
+						+bookStr
+						+"</div><div><table border='' style='width:100%'>"
+						+"<tr><td style='width:30%'>"
+						+title
+						+"</td><td style='width:70%'><pre>"
+						+bcontent
+						+"</pre></td></tr></table></div></li></ul>";
+				//add note and give it slide animate
+				qaContainer.append(addStr).find("ul:last").addClass('accordionPart').find('li div:nth-child(1)').addClass('qa_title').hover(function(){
+					$(this).addClass('qa_title_on');
+				}, function(){
+					$(this).removeClass('qa_title_on');
+				}).click(function(){
+					// 當點到標題時，若答案是隱藏時則顯示它，同時隱藏其它已經展開的項目
+					// 反之則隱藏
+					var $qa_content = $(this).next('div.qa_content');
+					if(!$qa_content.is(':visible')){
+						$('#qaContent ul li div.qa_content:visible').slideUp();
+					}
+					$qa_content.slideToggle();
+				}).siblings().addClass('qa_content').hide();
+				//refresh select
+				refreshSelect();
+				//清空新增設定欄位
+				$("#newbook").val("");
+				$("#title").val("");
+				$("#content").val("");
+				alert("Add Note success");
+			}
+			
+			//make download link
+			makeDownloadButton("新增「<font color='red'>"+ modifyBook + "</font>」主題下的「<font color='red'>" + title + "</font>」標題");
+		});
+		//Open Mode
+		$("#openMode").click(function(){
+			if($(this).prop("checked")){
+				$("li div:nth-of-type(2)").slideDown();
+			}else {
+				$("li div:nth-of-type(2)").slideUp();
+			}
+		});
+		//Delete Note
+		$("#deleteBtn").click(function(){
+			var deleteSelectValue = $("#deleteSelect").val();
+			//alert()
+			var delUl;
+			for(var di = 0;di<bookSize;di++){
+				if(deleteSelectValue == $("li div:nth-of-type(1)").eq(di).text()){
+					delUl = $("li div:nth-of-type(1)").eq(di).parent().parent();
+					delUl.remove();
+				}
+			}
+			//refresh select
+			refreshSelect();
+			//make download link
+			makeDownloadButton("刪除「<font color='red'>"+ deleteSelectValue +"</font>」主題 ");
+			alert(deleteSelectValue + " 已刪除");
+		});
+		//Refresh Delete title select
+		$("#deleteNoteSelect").change(function(){
+			var DNSValue = $(this).val();
+			refreshTitleSelect(DNSValue);
+		});
+		//Delete Title
+		$("#deleteTitleBtn").click(function(){
+			var titleValue = deleteTitleSelect.val();
+			var titleBookValue = deleteNoteSelect.val();
+			var titleTable = $("li div:nth-of-type(1):contains("+ titleBookValue+ ")").next().find("table");
+			var titleTr = titleTable.find("tr td:contains("+titleValue+")").parent();
+			titleTr.remove();
+			//refresh title select
+			refreshTitleSelect(titleBookValue);
+			//make download link
+			makeDownloadButton("刪除「<font color='red'>"+ titleBookValue +"</font>」內的「<font color='red'>" + titleValue +"</font>」標題");
+			alert(titleBookValue +" 內的 " + titleValue +" 標題已刪除");
+		});
+		//Title Search
+		$("#TSBtn").click(function(){
+			var TSStr = $("#titleSearch").val();
+			var showTitle = $("tr td:nth-of-type(1):contains("+TSStr+")");
+			if(showTitle.size() == 0){
+				alert("無此主題");
+				return;
+			}
+			//change background color
+			showTitle.css("background","yellow");
+			//Slide Down
+			showTitle.parent().parent().parent().parent().slideDown();
+			alert("找到 "+showTitle.size()+" 個相符主題");
+		});
+		//Content Search
+		$("#CSBtn").click(function(){
+			var CSStr = $("#contentSearch").val();
+			var showContent = $("tr td:nth-of-type(2):contains("+CSStr+")");
+			if(showContent.size() == 0){
+				alert("無此內容");
+				return;
+			}
+			//change background color
+			showContent.css("background","yellow");
+			//Slide Down
+			showContent.parent().parent().parent().parent().slideDown();
+			alert("找到 "+showContent.size()+" 個相符內容");
+		});
+		//to top img
+		$("#totopBtn").click(function(){
+			var imgElement = $(this).find("img");
+			var imgName = imgElement.attr("src");
+			if(imgName == "totop.png"){
+				jQuery("html,body").animate({
+					scrollTop: 0
+				}, 1000);
+				imgElement.attr("src","tobottom.png");
+			}else {
+				jQuery("html,body").animate({
+					scrollTop: $(document).height()
+				}, 1000);
+				imgElement.attr("src","totop.png");
+			}
+		});
+
+	});
+	
+//make download link button
+function makeDownloadButton(action){
+	//Create Modified Time
+	createModifiedTime(action);
+	var $link = $("#aDownload");//a tag element
+	var htmlStr = "<!doctype html><html>" +$("html").html()+"</html>";//可依需求自訂內容
+	var blob = new Blob([htmlStr], 
+			  { type:"application/octect-stream" });
+	var blobUrl = URL.createObjectURL(blob);
+	var fileName = "note.html";
+	$link.attr({ href: blobUrl, download: fileName });
+	$("#downloadBtn").show();
+}
+//Create Modified Time
+function createModifiedTime(actionStr){
+	var MTD = $("#modifiedTimeDiv");
+	var timeStr = "";
+	var nowDate =new Date();
+	var nowY = nowDate.getFullYear();        
+	var nowM = nowDate.getMonth()+1;              
+	var nowD = nowDate.getDate();
+	var nowH = nowDate.getHours();  
+	var nowMinutes = nowDate.getMinutes();  
+	//var nowSeconds = nowDate.getSeconds();
+	timeStr = nowY + "/" + nowM +"/" + nowD + " " + nowH + ":" + nowMinutes;
+	MTD.html("最後修改時間 : <br><br>" + timeStr +"<br><br>" + "最後修改動作 : <br><br>" + actionStr);
+}
+
+//refresh note select
+function refreshSelect(){
+	bookSize = $("li div:nth-of-type(1)").size();
+	bookSelect.empty();
+	deleteSelect.empty();
+	deleteNoteSelect.empty();
+	bookSelect.append("<option value='addBook'>新增主題</option>");
+	for(var ri = 0;ri<bookSize;ri++){
+			var bookNameR = $("li div:nth-of-type(1)").eq(ri).text();
+			var bookStrR = "<option value='"+bookNameR+"'>"+bookNameR;
+			bookSelect.append(bookStrR);
+			deleteSelect.append(bookStrR);
+			deleteNoteSelect.append(bookStrR);
+	}
+	//refresh delete title select
+	refreshTitleSelect($("li div:nth-of-type(1)").eq(0).text());
+}
+
+//refresh title select
+function refreshTitleSelect(aDNSValue){	
+	var titleTable = $("li div:nth-of-type(1):contains("+aDNSValue+")").next().find("table");
+	var titles = titleTable.find("tr td:nth-of-type(1)");
+	deleteTitleSelect.empty();
+	for (var ti = 0;ti < titles.size();ti++){
+		var titleName = titles.eq(ti).text();
+		deleteTitleSelect.append("<option value='"+titleName+"'>"+titleName);
+	}
+}
+</script>
+<!-- InstanceEndEditable -->
+<style type="text/css">
+td:nth-of-type(1){
+	text-align:center;
+	font-weight:bold;
+	color:blue;
+	font-family:"Comic Sans MS", cursive, sans-serif,"Microsoft JhengHei";
+}
+
+td:nth-of-type(2){
+	font-weight:bold;
+	color:blue;
+	font-family:Microsoft JhengHei;
+}
+
+div,button {
+	font-weight:bold;
+	color:blue;
+	font-family:"Comic Sans MS", cursive, sans-serif,"Microsoft JhengHei";
+	font-size:18px;
+}
+
+li div:nth-of-type(1):hover {
+	text-decoration:underline;
+	cursor:pointer;
+	color:pink;
+}
+
+input,option,textarea {
+	font-weight:bold;
+	font-family:"Comic Sans MS", cursive, sans-serif,"Microsoft JhengHei";
+	font-size:15px;
+}
+
+.goldDiv {
+    <!--background: #FFF6DB;-->
+    border-width: 4px;
+    border-style: solid;
+    border-color: #CFC095;
+	<!--padding:5px;-->
+}
+.pinkDiv {
+    background: #FFE7D9;
+    border-width: 4px;
+    border-style: solid;
+    border-color: #CEB9AD;
+	padding:5px;
+}
+</style>
+</head>
+<body>
+<header>
+<!--修改時間-->
+<div id="modifiedTimeDiv" style="position:absolute;top:4%;left:60%;">最後修改時間:</div>
+</header>
+<!-- InstanceBeginEditable name="body" -->
+<div class="w1024">
+    <div class="Inbox">
+				<!-- Explanation div -->
+		<div id="" class="goldDiv">
+			<pre style="font-size:15px;">
+Add Note:
+1.新增/選擇主題
+2.填入主題名稱、內容標題、內容文字(<:&amp;lt;  >:&amp;gt;)
+3.按ADD按鈕，新增成功後會出現DOWNLOAD按鈕
+4.按下DOWNLOAD按鈕生成新html
+Delete Note:
+1.選擇想刪除的主題
+2.按DELETE按鈕，刪除成功後會出現DOWNLOAD按鈕
+3.按下DOWNLOAD按鈕生成新html
+Open Mode:
+勾選時展開所有主題，取消勾選時收起
+			</pre>
+		</div>
+		<!-- note div -->
+        <div id="qaContent">
+			<ul>
+				<li>
+					<div>Notepad++</div>
+					<div>
+						<table border="" style="width:100%">
+							<tr>
+								<td style="width:30%">Ctrl-U</td>
+								<td style="width:70%">變為小寫</td>
+							</tr>
+							<tr>
+								<td>Ctrl-Shift-U</td>
+								<td>變為大寫</td>
+							</tr>
+							<tr>
+								<td>Ctrl-H</td>
+								<td>打開 Find / Replace 對話框</td>
+							</tr>
+							<tr>
+								<td>Ctrl-K</td>
+								<td>註解</td>
+							</tr>
+							<tr>
+								<td>Alt-C</td>
+								<td>批次插入數字/文字(先選擇多列)</td>
+							</tr>
+							<tr>
+								<td>Alt+S</td>
+								<td>文件對比</td>
+							</tr>
+						</table>
+					</div>
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<div>word小技巧</div>
+					<div>
+						<table border="" style="width:100%">
+							<tr>
+								<td style="width:30%">圖片向上長/圖片顯示剩最下方一條</td>
+								<td style="width:70%">行距由固定改成單行間距</td>
+							</tr>
+							<tr>
+								<td>Ctrl-Shift-Enter</td>
+								<td>表格分割</td>
+							</tr>
+							<tr>
+								<td>Ctrl-Enter</td>
+								<td>強迫換頁</td>
+							</tr>
+						</table>
+					</div>
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<div>CSS</div>
+					<div>
+						<table border="" style="width:100%" padding="">
+							<tr>
+								<td style="width:30%">text-indent</td>
+								<td style="width:70%">
+								段落首字縮排<br>
+								首行凸排:&lt;p style="margin-left:1.4em;text-indent:-1.4em&gt;
+								</td>
+							</tr>
+							<tr>
+								<td>border-collapse</td>
+								<td>
+								:separate　預設值，邊框彼此間分開<br>
+								:collapse　邊框合併為單一邊框<br>
+								ps:border-collapse 常與 border-spacing 屬性搭配在一起設計，取代傳統 HTML 表格的 cellspacing 功能
+								</td>
+							</tr>
+							<tr>
+								<td>text-decoration</td>
+								<td>
+								:none　預設值，不顯示任何文字特效<br>
+								:overline　替文字增加上線<br>
+								:underline　替文字增加底線<br>
+								:line-through　替文字增加刪除線<br>
+								</td>
+							</tr>
+							<tr>
+								<td>文字分散對齊</td>
+								<td>
+								style="word-spacing:5px;white-space:nowrap;"<br>
+								word-spacing　表示每個空白的width<br>
+								white-space:nowrap　表示不斷行，可加可不加，避免換行造成格式位移<br>
+								:overline　替文字增加上線<br>
+								:underline　替文字增加底線<br>
+								:line-through　替文字增加刪除線<br>
+								</td>
+							</tr>
+							<tr>
+								<td>pre自動換行</td>
+								<td>
+								<pre>
+pre { white-space: pre-wrap; /* css-3 */ 
+	  white-space: -moz-pre-wrap; /* Mozilla, since 1999 */ 
+	  white-space: -pre-wrap; /* Opera 4-6 */ 
+	  white-space: -o-pre-wrap; /* Opera 7 */ 
+}
+ 
+* html pre { word-wrap: break-word; /* Internet Explorer 5.5+ */ 
+			 white-space : normal ; /* Internet Explorer 5.5+ */ 
+} 
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>自動換行</td>
+								<td>
+								style="word-wrap: break-word;word-break: normal;"
+								</td>
+							</tr>
+							<tr>
+								<td>float</td>
+								<td>
+								left（靠左浮動）、right（靠右浮動）、none（預設值，也就是不浮動）<br>
+								ps:搭配clear使用
+								</td>
+							</tr>
+							<tr>
+								<td>clear</td>
+								<td>
+								用來清除某一元素的側邊浮動元素<br>
+								left（清除左邊浮動區塊）、right（清除右邊浮動區塊）、both（清除兩邊浮動區塊）
+								</td>
+							</tr>
+							<tr>
+								<td>cursor:游標效果</td>
+								<td>
+								<span style="cursor:auto">auto</span><br>
+								<span style="cursor:crosshair">crosshair</span><br>
+								<span style="cursor:default">default</span><br>
+								<span style="cursor:e-resize">e-resize</span><br>
+								<span style="cursor:grab">grab</span><br>
+								<span style="cursor:help">help</span><br>
+								<span style="cursor:move">move</span><br>
+								<span style="cursor:n-resize">n-resize</span><br>
+								<span style="cursor:ne-resize">ne-resize</span><br>
+								<span style="cursor:nw-resize">nw-resize</span><br>
+								<span style="cursor:pointer">pointer</span><br>
+								<span style="cursor:progress">progress</span><br>
+								<span style="cursor:s-resize">s-resize</span><br>
+								<span style="cursor:se-resize">se-resize</span><br>
+								<span style="cursor:sw-resize">sw-resize</span><br>
+								<span style="cursor:text">text</span><br>
+								<span style="cursor:w-resize">w-resize</span><br>
+								<span style="cursor:wait">wait</span><br>
+								<span style="cursor:not-allowed">not-allowed</span><br>
+								<span style="cursor:no-drop">no-drop</span><br>
+								</td>
+							</tr>
+							<tr>
+								<td>font-family:改變字體</td>
+								<td>
+								1."Comic Sans MS", cursive, sans-serif : 卡通英文字體<br>
+								2."Microsoft JhengHei" : 微軟正黑體<br>
+								ps:如要中英雙字體共存，請將英文字體寫在前面<br>
+								ex:"Comic Sans MS", cursive, sans-serif,"Microsoft JhengHei"
+								</td>
+							</tr>
+						</table>
+					</div>
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<div>JQuery</div>
+					<div>
+					<table border="" style="width:100%">
+						<tr>
+							<td style="width:30%">.appendTo()</td>
+							<td style="width:70%">
+							从一个地方移动或复制元素到另一个地方<br>
+							$(content).appendTo(selector)　content append into selector
+							</td>
+						</tr>
+						<tr>
+							<td>.children(selector)</td>
+							<td>
+							find children<br>
+							ex:.children(':last')　倒數第1個child
+							</td>
+						</tr>
+						<tr>
+							<td>.size()</td>
+							<td>取得元素數量</td>
+						</tr>
+						<tr>
+							<td>.eq(n)</td>
+							<td>一群裡面的第n個(-n表示倒數第n個)</td>
+						</tr>
+						<tr>
+							<td>元素轉換</td>
+							<td>
+							1.element轉DOM:　$(selector).get(n)/$(selector)[n]<br>
+							2.DOM轉element:　jQuery(DOM)/$(DOM)<br>
+							ex:$(document.getElementById("id"))
+							</td>
+						</tr>
+						<tr>
+							<td>回頂端效果</td>
+							<td>
+							<pre>
+$("XXX").click(function () {
+	jQuery("html,body").animate({
+		scrollTop: 0
+	}, 1000);
+});
+							</pre>
+							</td>
+						</tr>
+						<tr>
+							<td>append元素後加入淡入動畫</td>
+							<td>
+							$("id").hide().fadeIn(2000,callback)<br>
+							ps:如果只要該新增元素有動畫效果，請給它id,單獨對它hide and fadeIn
+							</td>
+						</tr>
+						<tr>
+							<td>side動畫</td>
+							<td>
+							slideDown()　　Slides-down (shows) the selected elements<br>
+							slideToggle()　Toggles between the slideUp() and slideDown() methods<br>
+							slideUp()　　　Slides-up (hides) the selected elements
+							</td>
+						</tr>
+						<tr>
+							<td>.parent()</td>
+							<td>取得父元素</td>
+						</tr>
+						<tr>
+							<td>:nth-last-child(n)</td>
+							<td>
+							倒數第n個child
+							</td>
+						</tr>
+						<tr>
+							<td>使按鈕失效</td>
+							<td>$("#btn").attr("disabled", true);</td>
+						</tr>
+						<tr>
+							<td>移除元素</td>
+							<td>
+							.empty()　清空子元素<br>
+							.remove()　移除自己含子元素<br>
+							</td>
+						</tr>
+						<tr>
+							<td>取得selected value</td>
+							<td>
+							直接使用.val()即可取得當前被選擇的option value<br>
+							配合.change()使用<br>
+							</td>
+						</tr>
+					</table>
+					</div>
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<div>Javascript</div>
+					<div>
+						<table border="" style="width:100%">
+							<tr>
+								<td style="width:30%">RegExp</td>
+								<td style="width:70%">
+								<pre>
+1. var reg = /正則表示式(勿加單雙引號)/
+2. var reg = new RegExp(可字串/變數/同1.的正則表示式)
+3. method:
+	(1).exec() return array or null
+	ps:正則表示式內用()隔開,會回傳array,否則只回傳第一個match的字串
+	ex:
+	var str = "it is a test";
+	var reg =/([a-z]{1})([a-z]{2})/;
+	var result = reg.exec(str);
+	result[0] = "tes";
+	result[1] = "t";
+	result[2] = "es";
+	
+	var str = "it is a test";
+	var reg =/[a-z]{1}[a-z]{2}/;
+	var result = reg.exec(str);
+	result = "tes";
+	result[0] = "tes";
+	result[1] = undefined;
+	result[2] = undefined;
+	
+	(2).test() return true or false
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>Math</td>
+								<td>
+								<pre>
+Math.pow(x,y)           x的y次方
+Math.random()           0 ~ 1的亂數(不含1)
+Math.round()            四捨五入
+Math.floor()            取最大整數(5.1 > 5 / -5.1 > -6)
+Math.ceil()             取最小整數(5.1 > 6 / -5.1 > -5)
+Math.abs()              絕對值
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>.toFixed(n)</td>
+								<td>取到小數點下的指定n位數</td>
+							</tr>
+							<tr>
+								<td>location.href</td>
+								<td>取得目前網頁網址</td>
+							</tr>
+							<tr>
+								<td>String</td>
+								<td>
+								<pre>
+.substring(x,y)			取index x ~ y的字串
+.indexOf(x)				抓字串中x字串首次出現的index
+String(數字)			數字轉字串
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>XMLHttpRequest</td>
+								<td>
+								<pre>
+1.檢查檔案存不存在:
+function IsFileExist(filePath){
+	var bo = false;
+	var request = new XMLHttpRequest();
+	request.open("HEAD", filePath, false);
+	request.send(null);
+	if(request.readyState == 4 && request.status == 200){
+		bo=true;
+	}
+	return bo;
+}
+
+2.切板
+var requestH = new XMLHttpRequest();
+$("header").empty();
+requestH.open("GET", "/header.html", false);
+requestH.responseType = "text/html";
+requestH.send(null);
+$("header").append(requestH.responseText);
+
+3.取得字串不亂碼
+//not IE8
+if(request.overrideMimeType){
+	request.overrideMimeType("text/html;charset=big5");
+	request.send(null);
+	returnValue =request.responseText;
+//IE8
+} else {
+	request.send(null);
+	returnValue =gb2utf8(request.responseBody); //gb2utf8()請參考powerful method
+}
+
+4.no-cache
+url後面加上:?_='" + new Date().getTime()
+ex:"xxxxxx.txt?_='" + new Date().getTime()
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>Date</td>
+								<td>
+								<pre>
+1.時間取得
+var Today=new Date();
+var nowY = Today.getFullYear()-1911;        民國年(用西元時不用減1911)
+var nowM = Today.getMonth()+1;              當前月份
+var nowD = Today.getDate();                 日期
+var nowW = Today.getDate();                 星期日 = 0, 星期一 = 1, 星期二 = 2, 星期三 = 3, 星期四 = 4,星期五 = 5, 星期六 = 6
+var nowH = Today.getHours();                時(24進制)
+var nowMinutes = Today.getMinutes();        分
+var nowSeconds = Today.getSeconds();        秒數(毫秒數:getMilliseconds())
+
+2.時間驗證
+利用 Date.parse() + isNaN()
+Date.parse():固定格式時間字串轉秒數("yyyy/mm/dd")
+isNaN():是否為數字
+ex:if(isNaN(Date.parse(rowDate)))
+
+3.時間比大小
+利用Date.parse() + valueOf()
+ex:if(Date.parse(rowDate).valueOf() > Date.parse(row2Date).valueOf())
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>mailto</td>
+								<td>
+								<pre>
+&lt;a href="mailto:xxx@xxx.xxx?subject=標題&amp;body=內容"&gt;
+mailto:name@email.com : e-mail recipient address
+cc=name@email.com : carbon copy(複本) e-mail address
+bcc=name@email.com : blind carbon copy e-mail address
+subject=subject text : subject of e-mail
+body=body text : body of e-mail
+? : first parameter delimiter
+&amp; : other parameters delimiter
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>no-cache</td>
+								<td>
+								<pre>
+&lt;meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"&gt;
+&lt;meta http-equiv="Pragma" content="no-cache"&gt;
+&lt;meta http-equiv="Expires" content="0"&gt;
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>定時執行</td>
+								<td>
+								setInterval(function(){ alert("Hello"); }, 3000)<br>
+								setTimeout(function(){ alert("Hello"); }, 3000)
+								</td>
+							</tr>
+							<tr>
+								<td>觸發檔案下載方式</td>
+								<td>
+								<pre>
+1.window.open(dlLink);
+2.location.href = dlLink;
+3.var $ifrm = $("&lt;iframe style='display:none' /&gt;");
+  $ifrm.attr("src", dlLink);
+  $ifrm.appendTo("body");
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>Array</td>
+								<td>
+								.pop()　return 最後的元素並於陣列中刪除<br>
+								</td>
+							</tr>
+							<tr>
+								<td>頁面重新整理</td>
+								<td>location.reload()</td>
+							</tr>
+						</table>
+					</div>
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<div>Json</div>
+					<div>
+						<table border="" style="width:100%">
+							<tr>
+								<td style="width:30%">1.txt無陣列寫法</td>
+								<td style="width:70%">
+								<pre>
+{
+	"firstyear" : "105",
+	"firstmonths" : "01-02-03-04-05",
+	"secondyear" : "104",
+	"secondmonths" : "06-07-08-09-10-11-12"
+}
+
+var request = new XMLHttpRequest();
+request.open("GET", url, false);
+request.send(null);
+if(request.readyState == 4 && request.status == 200){
+  var jsonObj = JSON.parse(request.responseText);	
+}
+
+var fy = jsonObj.firstyear;
+var fms = jsonObj.firstmonths.split("-");
+var sy = jsonObj.secondyear
+var sms = jsonObj.secondmonths.split("-");
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>2.txt陣列寫法</td>
+								<td>
+								<pre>
+{
+	"familys" : [
+		{"name" : "Bruce", "age" : 18, "sex" : "male"}, 
+		{"name" : "Sherry","age" : 16, "sex" : "famale"}
+		
+]}
+
+var request = new XMLHttpRequest();
+request.open("GET", url, false);
+request.send(null);
+if(request.readyState == 4 && request.status == 200){
+  var jsonObj = JSON.parse(request.responseText);	
+}
+
+var content = "";
+for(var i in jsonObj.familys){
+	content = content +"&lt;tr&gt;"
+			+"&lt;td&gt;"+jsonObj.familys[i].name+"&lt;/td&gt;"
+			+"&lt;td&gt;"+jsonObj.familys[i].age+"&lt;/td&gt;"
+			+"&lt;td&gt;"+jsonObj.familys[i].sex+"&lt;/td&gt;"
+			+"&lt;tr&gt;";
+}
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>3.json txt 無法使用註解</td>
+								<td>json txt 無法使用註解</td>
+							</tr>
+							<tr>
+								<td>4.json txt 最後一個元素勿有","</td>
+								<td>json txt 最後一個元素勿有",".....否則read error</td>
+							</tr>
+						</table>
+					</div>
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<div>bat執行檔設定</div>
+					<div>
+						<table border="" style="width:100%">
+							<tr>
+								<td style="width:30%">@echo off</td>
+								<td style="width:70%">不顯示指令</td>
+							</tr>
+							<tr>
+								<td>echo XXX</td>
+								<td>畫面顯示XXX</td>
+							</tr>
+							<tr>
+								<td>pause</td>
+								<td>請按任意鍵繼續</td>
+							</tr>
+							<tr>
+								<td>dir /b /on >zzzzz.txt</td>
+								<td>所在資料夾下所有檔名寫入zzzzz.txt</td>
+							</tr>
+							<tr>
+								<td>cmd</td>
+								<td>批次插入數字/文字(先選擇多列)</td>
+							</tr>
+							<tr>
+								<td>中文亂碼處理</td>
+								<td>轉換成ANSI格式即可</td>
+							</tr>
+						</table>
+					</div>
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<div>Powerful Method</div>
+					<div>
+						<table border="" style="width:100%">
+							<tr>
+								<td style="width:30%">csv String to array</td>
+								<td style="width:70%">
+								<pre>
+// ref: http://stackoverflow.com/a/1293163/2343
+// This will parse a delimited string into an array of
+// arrays. The default delimiter is the comma, but this
+// can be overriden in the second argument.
+function CSVToArray( strData, strDelimiter ){
+	// Check to see if the delimiter is defined. If not,
+	// then default to comma.
+	strDelimiter = (strDelimiter || ",");
+
+	// Create a regular expression to parse the CSV values.
+	var objPattern = new RegExp(
+		(
+			// Delimiters.
+			"(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+			// Quoted fields.
+			"(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+			// Standard fields.
+			"([^\"\\" + strDelimiter + "\\r\\n]*))"
+		),
+		"gi"
+		);
+
+
+	// Create an array to hold our data. Give the array
+	// a default empty first row.
+	var arrData = [[]];
+
+	// Create an array to hold our individual pattern
+	// matching groups.
+	var arrMatches = null;
+
+
+	// Keep looping over the regular expression matches
+	// until we can no longer find a match.
+	while (arrMatches = objPattern.exec( strData )){
+
+		// Get the delimiter that was found.
+		var strMatchedDelimiter = arrMatches[ 1 ];
+
+		// Check to see if the given delimiter has a length
+		// (is not the start of string) and if it matches
+		// field delimiter. If id does not, then we know
+		// that this delimiter is a row delimiter.
+		if (
+			strMatchedDelimiter.length &&
+			strMatchedDelimiter !== strDelimiter
+			){
+
+			// Since we have reached a new row of data,
+			// add an empty row to our data array.
+			arrData.push( [] );
+
+		}
+
+		var strMatchedValue;
+
+		// Now that we have our delimiter out of the way,
+		// let's check to see which kind of value we
+		// captured (quoted or unquoted).
+		if (arrMatches[ 2 ]){
+
+			// We found a quoted value. When we capture
+			// this value, unescape any double quotes.
+			strMatchedValue = arrMatches[ 2 ].replace(
+				new RegExp( "\"\"", "g" ),
+				"\""
+				);
+
+		} else {
+
+			// We found a non-quoted value.
+			strMatchedValue = arrMatches[ 3 ];
+
+		}
+
+
+		// Now that we have our value string, let's add
+		// it to the data array.
+		arrData[ arrData.length - 1 ].push( strMatchedValue );
+	}
+
+	// Return the parsed data.
+	return( arrData );
+}
+
+說明:
+1.csvData = csv String
+2."," = 分割字元
+3.回傳array
+4.ex:CSVToArray(csvData,",")
+								</pre>
+								</td>
+							</tr>
+							<tr>
+								<td>Big5/gb to utf8</td>
+								<td>
+								<pre>
+function gb2utf8(data) {
+	var glbEncode = [];
+	gb2utf8_data = data;
+	execScript("gb2utf8_data = MidB(gb2utf8_data, 1)", "VBScript");
+	var t = escape(gb2utf8_data).replace(/%u/g, "")
+	.replace(/(.{2})(.{2})/g, "%$2%$1").replace(/%([A-Z].)%(.{2})/g, "@$1$2");
+	t = t.split("@");
+	var i = 0, j = t.length, k;
+	while (++i &lt; j) {
+		k = t[i].substring(0, 4);
+		if (!glbEncode[k]) {
+			gb2utf8_char = eval("0x" + k);
+			execScript("gb2utf8_char = Chr(gb2utf8_char)", "VBScript");
+			glbEncode[k] = escape(gb2utf8_char).substring(1, 6);
+		}
+		t[i] = glbEncode[k] + t[i].substring(4);
+	}
+	gb2utf8_data = gb2utf8_char = null;
+	return unescape(t.join("%"));             
+}
+
+說明:
+處理csv String 中文亂碼問題
+ex:
+request = new XMLHttpRequest();
+			.
+			.
+gb2utf8(request.responseBody);
+(必須使用responseBody)
+								</pre>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<div>SpringMVC</div>
+					<div>
+						<table border="" style="width:100%">
+							<tr>
+								<td style="width:30%">bean</td>
+								<td style="width:70%">
+								<pre>
+1.放在class之前:
+@Entity
+@Table(name = "DB對應的Table name")		
+
+2.class implements Serializable
+3.property
+@Id　　　　　　　主鍵
+@Column(name)　　name = "DB對應的column name"
+								</pre>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</li>
+			</ul>
+        </div>
+		<div style="clear:both"></div>
+		<hr>
+		<!-- util div -->
+		<div>
+			<div id="searchDiv" style="float:left;width:30%">
+				<h3>Search Note</h3>
+				Title Search:<br>
+				<input type="text" name="titleSearch" id="titleSearch" />
+				<button id="TSBtn">SEARCH</button><br><br>
+				Content Search:<br>
+				<input type="text" name="contentSearch" id="contentSearch" />
+				<button id="CSBtn">SEARCH</button>
+			</div>
+			<div id="addDiv" style="float:left;width:50%">
+				<h3>Add Note</h3>
+				選擇主題:<br>
+				<select name="bookSelect" id="bookSelect">
+					<option value="addBook">新增主題</option>
+				</select>
+				<span id="newbookSpan"><br>設定主題:<br><input type="text" name="newbook" id="newbook" /></span><br><br>
+				設定標題:<br>
+				<input type="text" name="title" id="title" />
+				<br><br>
+				設定內容:<br>
+				<textarea rows="4" cols="50" id="content"></textarea>
+				<br><br>
+				<button id="addBtn">ADD</button>
+				<button id="downloadBtn"><a id='aDownload'>DOWNLOAD</a></button>
+				
+			</div>
+			<div id="deleteDiv" style="float:left;width:20%">
+				<!-- Delete Note -->
+				<h3>Delete Note</h3>
+				<select name="deleteSelect" id="deleteSelect">
+				</select>
+				<button id="deleteBtn">DELETE</button><br>
+				<!-- Delete title -->
+				<h3>Delete Title</h3>
+				<select name="deleteNoteSelect" id="deleteNoteSelect">
+				</select><br>
+				<select name="deleteTitleSelect" id="deleteTitleSelect">
+				</select><br><br>
+				<button id="deleteTitleBtn">DELETE</button><br>
+				<!-- Open Mode -->
+				<h3><input type="checkbox" name="openMode" id="openMode" />　Open Mode</h3>
+			</div>
+		</div>
+		<!-- util div -->
+    </div>
+</div>
+<!-- InstanceEndEditable -->
+<footer>
+<button id="totopBtn"><img src="totop.png" alt="" /></button>
+</footer>
+<style type="text/css">
+#totopBtn {
+	width:80px;
+	height:80px;
+	display:scroll;
+	position:fixed;
+	bottom:10px;
+	right:10px;
+	background:rgba(0,0,0,0);
+	border-radius:10px;
+}
+#totopBtn:hover{
+	width:100px;
+	height:100px;
+	background:rgba(0,0,0,0.2);
+}
+#totopBtn img{
+	width:80px;
+	height:80px;
+	display:scroll;
+	position:fixed;
+	bottom:10px;
+	right:10px;
+}
+#totopBtn img:hover{
+	width:100px;
+	height:100px;
+}
+
+</style>
+</body>
+
+
+<!-- InstanceEnd --></html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html ng-app="sampleApp">
+<head>
+  <meta charset="utf-8">
+  <title>Lab 1 - 計算型屬性</title>
+</head>
+<body>
+  <div ng-controller="mainCtrl">
+    <input type="text" ng-model="firstName" />
+    <input type="text" ng-model="lastName" />
+    <br />
+    <span ng-bind="fullName()"></span>
+    <br />
+    <span>{{ fullName() }}</span>
+  </div>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.js"></script>
+  <script>
+    angular.module("sampleApp", [])
+    .controller("mainCtrl", function($scope) {
+      $scope.firstName="Jeffrey";
+      $scope.lastName="Lee";
+      $scope.fullName = function() {
+        return $scope.firstName + " " + $scope.lastName;
+      };
+    });
+  </script>
+</body>
+</html>
+
+<!--
+ 程式解析:
+
+1.<html>加上ng-app，指明網頁要使用sampleApp這個Module。(依慣例用App做為Module名稱字尾)
+2.<div>加上ng-controller，指明由mainCtrl這個Controller主控<div>內的MVVM作業。(依慣例取Ctrl字尾)
+3.<input>加上ng-model="屬性"，標明對firstName及lastName屬性做雙向繫結。
+4.
+單向繫結有兩種寫法: 用ng-bind或是直接寫{{ propName }}，後者簡潔直覺，可寫成"如果{{fact}}已成事實，{{action}}就是義務"一般文字與繫結內容交雜的字串，但缺點是繫結完成前要防止使用者看到{{、}}等裸碼。
+5.網頁要載入angular.js。 
+6.
+NG內建jqLite，摸擬並借用基本的jQuery功能以處理DOM操作，但功能很陽春。如果想要用完整的jQuery功能，可在載入angular前先載入jQuery，jqLite就會換成jQuery。我個人沒有jQuery就混不下去，專案中一定會加，此處不用僅示範NG不依賴jQuery也能運作。
+程式用angular.module("sampleApp", [])建立並註冊一個新的Module。注意後方的[]空集合表示不需要參照其他Moudle，但不能省略，若寫成.module("sampleApp")，NG會假設sampleApp已存在試圖找尋建好的Instance而出現錯誤。
+7.
+.module()方法傳回Module物件，像jQuery一樣，可接著呼叫.controller(名稱, 建構式)註冊Controller。(還可呼叫.service()、.directive()、filter()…等註冊其他項目)
+8.
+Controller建構式參數透過DI(依賴注入)方式傳遞，故把用到的項目列上去即可，順序不重要。我們一定會用到的是$scope，它相當於KO的ViewModel角色，MVVM沒有VM玩個屁呢? 
+註: function($scope) { ... }的寫法在JavaScript壓縮(Minification)過程可能被修改，$scope被換成a, b之類的隨機變數名稱，導致DI機制失效。因此NG提供另一種寫法，.controller("mainCtrl", ["$scope", function($scope) { ... }]，如果要進行JS壓縮，記得要用這種寫法。(關於Controller的宣告方式，保哥有篇文章詳解)
+9.
+$scope.firstName宣告ViewModel有個firstName屬性，事實上不加也成，NG在ng-model看到未宣告屬性，便會自動在$scope新增。(不必宣告，遇缺新增的缺點是打錯字不會報錯而是冒出新屬性，Debug起來比較刺激)
+10.
+在KO要用ko.observable()屬性才可雙向繫結，需用ko.computed()建立計算型屬性。在NG不必這麼麻煩，直接寫成一般JavaScript物件跟屬性處理就可以，所以fullName寫成function() { return this.fisrtName + " " + this.lastName; }，在firstName或lastName變動時就會自動更新。(註: 這麼做有其方便之處，但複雜情境不易判斷某項更動會不會影響繫結，與KO的做法也算各有優劣)
+ -->
+
+ <!--
+另一種寫法:
+  <div ng-controller="mainCtrl">
+    <input type="text" ng-model="model.firstName" />
+    <input type="text" ng-model="model.lastName" />
+    <br />
+    <span ng-bind="model.fullName()"></span>
+    <br />
+    <span>{{ model.fullName() }}</span>
+  </div>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.js"></script>
+  <script>
+    angular.module("sampleApp", [])
+    .controller("mainCtrl", function($scope) {
+      function myViewModel() {
+        var self = this;
+        self.firstName="Jeffrey";
+        self.lastName="Lee";
+        self.fullName = function() {
+          return self.firstName + " " + self.lastName;
+        };
+      }
+      $scope.model = new myViewModel();
+    });
+  </script>
+ -->

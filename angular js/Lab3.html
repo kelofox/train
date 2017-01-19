@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html ng-app="sampleApp">
+<head>
+	<meta charset="UTF-8">
+	<title>Lab 3 - 動態增加SELECT選項</title>
+</head>
+<body ng-controller="defaultCtrl">
+	<select id="selOptions" style="width: 120px" ng-options="item.text for item in model.options" ng-model="model.result"></select>
+	Result=<span ng-bind="model.result.value"></span>
+
+	<div style="margin-top: 10px">
+		Text: <input id="txtOptText" value="Firefox">
+		Value: <input id="txtOptValue" value="ff"></input> &nbsp;
+		<input type="button" value="新增選項" id="btnAddOpt" ng-click="model.addOption()">
+		<input type="button" value="$apply()" id="btnAddOpt2">
+		<div id="dvDebug"></div>
+	</div>
+	<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.9.1.js"></script>
+ 	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.js"></script>
+ 	<script type="text/javascript">
+ 		var vm = null;
+ 		angular.module('sampleApp', []).controller('defaultCtrl', function($scope){
+ 				function myViewModel(){
+ 					var self = this;
+ 					self.options = [
+ 						{ text: "IE", value: "ie"}
+ 					];
+ 					self.reslut = self.options[0];
+ 					self.addOption = function(){
+ 						self.options.push({
+ 							"text": $('#txtOptText').val(),
+ 							"value": $('#txtOptValue').val()
+ 						});
+ 						$('#dvDebug').text(JSON.stringify(vm.options));
+ 					};
+ 				}
+ 				vm = new myViewModel();
+ 				$scope.model = vm;
+ 		});
+ 		//使用$apply()作法
+ 		$('#btnAddOpt2').click(function(){
+ 			var scope = $(this).scope();
+ 			//方法1: 傳入指令字串給$apply()執行
+ 			var str = "model.options.push({text:'"
+ 					+ $("#txtOptText").val()
+ 					+ "',value:'"
+ 					+ $("#txtOptValue").val()
+ 					+ "'})";
+ 			//scope.$apply(str);
+ 			
+ 			//方法2: 利用$apply()執行函式
+ 			/*
+ 			scope.$apply(function(){
+ 				scope.model.options.push({
+ 					"text": $("#txtOptText").val(),
+ 					"value": $("#txtOptValue").val()
+ 				});
+ 			});
+ 			*/
+
+ 			//方法3: 執行完畢呼叫$apply()[不帶參數]
+ 			scope.model.options.push({
+				"text": $("#txtOptText").val(),
+				"value": $("#txtOptValue").val()
+			});
+			scope.$apply();
+ 			$('#dvDebug').text(JSON.stringify(vm.options));
+ 		});
+ 	</script>
+</body>
+</html>

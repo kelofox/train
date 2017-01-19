@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html ng-app="sampleApp">
+<head>
+  <meta charset="utf-8">
+  <title>Lab 2 - 對應下拉選單</title>
+</head>
+<body ng-controller="defaultCtrl">
+<select ng-options="item.t for item in model.options" ng-model="model.result" >
+</select><br />
+<span ng-bind="model.result.v"></span><br />
+<input type="button" value="Set Phone" ng-click="model.changeToPhone()" />
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.js"></script>
+  <script>
+    angular.module("sampleApp", [])
+    .controller("defaultCtrl", function($scope) {
+      function myViewModel() {
+        var self = this;
+        self.options = [
+                    { t: "PC", v: "PC" },
+                    { t: "Notebook", v: "NB" },
+                    { t: "Phone", v: "Phone" }
+        ];
+        self.result = self.options[0];
+        self.changeToPhone = function() {
+          self.result = self.options[2];
+        }
+      }
+      $scope.model = new myViewModel();
+    });
+  </script>
+</body>
+</html>
+
+<!--
+另一種寫法:
+<body ng-controller="defaultCtrl">
+<select ng-options="item.v as item.t for item in model.options" ng-model="model.result" >
+</select><br />
+<span ng-bind="model.result"></span><br />
+<input type="button" value="Set Phone" ng-click="model.changeToPhone()" />
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.js"></script>
+  <script>
+    angular.module("sampleApp", [])
+    .controller("defaultCtrl", function($scope) {
+      function myViewModel() {
+        var self = this;
+        self.options = [
+                    { t: "PC", v: "PC" },
+                    { t: "Notebook", v: "NB" },
+                    { t: "Phone", v: "Phone" }
+        ];
+        self.result = "NB";
+        self.changeToPhone = function() {
+          self.result = "Phone";
+        }
+      }
+      $scope.model = new myViewModel();
+    });
+  </script>
+</body>
+-->

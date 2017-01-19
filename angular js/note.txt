@@ -1,0 +1,149 @@
+1.ng-app:
+該區域內的指令會被Angular編譯器編譯、解析
+ng-app=""
+
+2.ng-init:
+初始化應用程序數據，也就是為AngularJS應用程序定義初始值
+多變量賦值:
+ng-init="quantity=1;price=5"(取值:{{ price }})
+ng-init="names=['Tom','Jerry','Gaffey']"(取值:{{ names[0] }})
+
+3.數據綁定:
+{{ expression }}
+
+4.ng-model:
+把應用程序數據綁定到HTML元素，實現model和view的雙向綁定。
+
+请输入任意值：<input type="text" ng-model="name" /> 
+你输入的为： {{ name }}
+
+5.ng-bind:
+類似{{}}功能，使用{{}}語法時，因為瀏覽器需要首先加載頁面，渲染它，然後AngularJS才能把它解析成你期望看到的內容，所以對於首個頁面中的數據綁定操作，建議採用ng-bind ，以避免其未被渲染的模板被用戶看到。
+
+请输入一个名字：<input type="text" ng-model="name" />
+Hello <span ng-bind="name"></span>
+
+6.ng-click:
+定義一個AngularJS單擊事件。
+
+<div ng-app="" ng-init="click=false">
+    <button ng-click="click= !click">隐藏/显示</button>
+    <div ng-hide="click">
+        请输入一个名字：<input type="text" ng-model="name" />
+        Hello <span ng-bind="name"></span> 
+    </div>
+</div>
+ps:ng-hide="true"，设置HTML元素不可见。(相反效果:ng-show)
+說明:一開始click = false ，當點擊button時click = !click(false > true) and ng-hide="true"，input就會消失
+
+7.MVVM:Model-View-ViewMode
+MVVM模式是Model-View-ViewMode模式的简称。由视图(View)、视图模型(ViewModel)、模型(Model)三部分组成，通过这三部分实现UI逻辑、呈现逻辑和状态控制、数据与业务逻辑的分离。
+
+8.ng-controller:控制器
+
+生成屬性:
+<div ng-app="" ng-controller="MyController">
+ 
+请输入一个名字：<input type="text" ng-model="person.name"> 
+ 
+Hello <span ng-bind="person.name"></span> 
+ 
+</div>    
+ 
+<script>
+function MyController($scope) {
+   $scope.person = {
+      name: "World"
+   };
+}
+</script>
+
+生成方法:
+<div ng-app="" ng-controller="MyController">
+     Your name:
+     <input type="text" ng-model="username">
+     <button ng-click="sayHello()">打招呼</button>
+     <hr />
+     {{greeting}}
+</div>
+ 
+<script>
+function MyController($scope) {
+  $scope.username = 'World';
+  $scope.sayHello = function() {
+    $scope.greeting= 'Hello ' + $scope.username + '!';
+  };
+}
+</script>
+
+9.ng-repeat:
+<!DOCTYPE html>
+<html ng-app="sampleApp">
+<head>
+  <meta charset="utf-8">
+  <title>Lab 1 - 計算型屬性</title>
+</head>
+<body>
+  <div ng-controller="mainCtrl">
+    <input type="text" ng-model="firstName" />
+    <input type="text" ng-model="lastName" />
+    <br />
+    <span ng-bind="fullName()"></span>
+    <br />
+    <span>{{ fullName() }}</span>
+  </div>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.js"></script>
+  <script>
+    angular.module("sampleApp", [])
+    .controller("mainCtrl", function($scope) {
+      $scope.firstName="Jeffrey";
+      $scope.lastName="Lee";
+      $scope.fullName = function() {
+        return $scope.firstName + " " + $scope.lastName;
+      };
+    });
+  </script>
+</body>
+</html>
+   {name:'Tom', age:25}, 
+   {name:'Jerry', age:28},
+   {name:'Tom', age:25}, 
+   {name:'Jerry', age:28}]">
+ 
+   <table>
+     <tr ng-repeat="x in friends">
+       <td> {{ 'Name：'+ x.name +' ，Age：'+ x.age}} </td>
+     </tr>
+   </table>
+</div>
+
+10.過濾器:
+用法：管道字符(|)+过滤器名。
+(1)uppercase、lowercase:对字符串转换大、小写
+<div ng-app="">
+    请输入: <input type="text" ng-model="name">
+    结果为： {{ name | uppercase}}
+</div>
+
+(2)currency:可以将数字转换成货币格式
+12345 > $12,345.00
+
+(3)filter:可以过滤数组并从中选择出一个子集出来，用法是“filter:模型名称”
+<div ng-app="" ng-init="friends = [
+   {name:'tom', age:16},
+   {name:'jerry', age:20}, 
+   {name:'garfield', age:22}]">
+ 
+    输入过滤:<input type="text" ng-model="name" >
+    <ul style="list-style-type:none">
+        <li>   姓名，年龄</li>
+        <li  ng-repeat="x in friends | filter:name">   
+            {{ x.name + ' , ' + x.age }}
+        </li>
+    </ul>    
+</div>
+
+(4) {{ someDate | date:'yyyy-MM-dd' }}
+
+(5) {{ someNumber | number:0 }} (number:小數點位數)
+
