@@ -1,0 +1,54 @@
+zk的xml設定檔讀取位置設定:
+pom.xml > 
+<plugin>
+	<artifactId>maven-assembly-plugin</artifactId>
+	<version>2.5.5</version>
+	<configuration>
+		<descriptors>
+			<descriptor>src/assembly/src.xml</descriptor>
+		</descriptors>
+		<descriptorRefs>
+			<descriptorRef>project</descriptorRef>
+		</descriptorRefs>
+	</configuration>
+	<executions>
+	  <execution>
+		<id>exercise</id> <!-- this is used for inheritance merges -->
+		<phase>package</phase> <!-- bind to the packaging phase -->
+		<goals>
+		  <goal>single</goal>
+		</goals>
+	  </execution>
+	</executions>				
+</plugin>
+---------------------------------------------------------------------------------------
+zk專案架構:
+預設首頁-src > main > webapp >index.html
+
+zul/圖片/css/js放置位置-src > main > webapp 底下
+
+---------------------------------------------------------------------------------------
+zul世界觀:
+在ZK世界裡,Desktop只會有一個,也就是Client端的瀏覽器!但是其中可以有很多的Page(你可以理解成每個zul都是一個Page,一般來說是這樣),
+在每個Page裡頭可以有很多個window
+Desktop(browser) > Page(zul) > window > tag
+
+取得Desktop:
+//取得Desktop(即browser)物件,Executions是隱含物件
+Desktop dtp = Executions.getCurrent().getDesktop();
+
+利用Desktop取得Page:
+Page page = dtp.getPageIfAny("Page在zul的id");
+
+利用Page取得Window:
+//fellow = child ,取時需轉型
+Window win = (Window) page1.getFellowIfAny("Window在zul的id");
+
+利用Window取得元件object:
+Button btn = (Button) win.getFellowIfAny("元件在zul的id");
+---------------------------------------------------------------------------------------
+zul中使用html tag:
+<zk xmlns:h="http://www.w3.org/1999/xhtml">
+	<h:br />
+	<h:br />
+<zk>
